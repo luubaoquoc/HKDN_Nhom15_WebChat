@@ -45,7 +45,6 @@ class CustomerController extends Controller
         return view('frontend.register');
     }
     public function postRegister(Request $req){
-
         //validate
         $req->validate([
             'name' => 'required|string|min:6|max:255',

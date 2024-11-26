@@ -13,7 +13,7 @@ use App\Notifications\VerifyEmail;
 
 class CustomerController extends Controller
 {
-    //
+    
     public function login(){
         return view('frontend.login');
     }

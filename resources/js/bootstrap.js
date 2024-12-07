@@ -26,3 +26,18 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 //     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
 //     forceTLS: true
 // });
+import Echo from 'laravel-echo';
+import { io } from 'socket.io-client';
+
+window.io = io;
+
+window.Echo = new Echo({
+    broadcaster: 'socket.io',
+    host: `${window.location.hostname}:6001`,
+});
+
+
+Echo.private(`room.${roomId}`)
+    .listen('MessageSent', (e) => {
+        console.log('New message:', e.message);
+    });

@@ -72,7 +72,7 @@
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" name="muteFor" id="privacy-term-agree">
                                                 <label class="form-check-label" for="privacy-term-agree">Remeber password</label>
-                                                <a href="#" class="link link-primary ms-auto">Forgot password?</a>
+                                                <a href="{{route('password.request')}}" class="link link-primary ms-auto">Forgot password?</a>
                                             </div><!-- .form-check -->
                                         </div><!-- .col -->
                                         </div><!-- .col -->

@@ -35,7 +35,7 @@ class CustomerController extends Controller
                 Auth::logout();
                 return redirect()->back()->with('msgError', 'Tài khoản của bạn chưa được kích hoạt. Vui lòng kiểm tra email.');
             }
-            return redirect()->route('index');
+            return redirect()->route('home');
         }
         return redirect()->back()->with('msgError', 'Đăng nhập không thành công!!!');
         
@@ -72,5 +72,11 @@ class CustomerController extends Controller
         } catch (\Throwable $th) {
             return redirect()->back()->with('msgError', 'Đăng ký không thành công.');
         }
+    }
+    //Xử lý đăng xuất 
+    public function getLogout(){
+        Auth::logout();
+
+        return redirect()->route('login')->with('msgSuccess', 'Đăng xuất thành công');
     }
 }

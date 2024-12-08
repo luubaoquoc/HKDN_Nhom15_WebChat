@@ -1,3 +1,338 @@
-<h1>Trang Message</h1>
+<!DOCTYPE html>
+<html lang="en">
 
-{{-- @include('sweetalert::alert') --}}
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>Web Chat Laravel</title>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" />
+  <!-- Google Fonts Roboto -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" />
+  <!-- MDB -->
+  <link href="{{ asset('assets/css/bootstrap-chat.min.css') }}" rel="stylesheet">
+  <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
+  
+</head>
+
+<body>
+
+  {{-- Header --}}
+  <header class="p-3 border-bottom shadow" style="position: relative; z-index: 999;">
+    <div class="container">
+      <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+        <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 link-body-emphasis text-decoration-none">
+          <svg class="bi me-2" width="40" height="32" role="img" aria-label="Bootstrap"><use xlink:href="#bootstrap"></use></svg>
+        </a>
+
+        <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+          <li><a href="#" class="fw-bold mb-0" style="color:rgba(213, 126, 235, 1); font-size:20px">Chatbox</a></li>
+        </ul>
+
+        <div class="dropdown text-end">
+          <a href="#" class="d-flex gap-2 link-body-emphasis text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
+            <p class="fw-bold mb-0" style="color: rgba(213, 126, 235, 1)">{{auth()->user()->name}}</p>
+          </a>
+          <ul class="dropdown-menu text-small">
+            <li><a class="dropdown-item" href="#">New project...</a></li>
+            <li><a class="dropdown-item" href="#">Settings</a></li>
+            <li><a class="dropdown-item" href="#">Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#">Sign out</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container-flex">
+    <div class="d-flex flex-row" style="width: 100%;">
+    
+    <!-- Start your project here-->
+    <section class="gradient-custom">
+      <div class="container py-5">
+
+        <div class="row">
+
+          <div class="col-md-6 col-lg-5 col-xl-5 mb-4 mb-md-0">
+
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="font-weight-bold mb-3 text-center text-white ms-5">Chat</h5>
+              <!-- Button trigger modal -->
+              <button type="button" class="btn btn-light mb-3 me-5" data-bs-toggle="modal" data-bs-target="#createRoomModal">
+                Thêm nhóm mới
+              </button>
+
+              <!-- Modal -->
+              <div class="modal fade" id="createRoomModal" tabindex="-1" aria-labelledby="exampleModalLabel" >
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h1 class="modal-title fs-5" id="exampleModalLabel">Tạo phòng chat</h1>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <form id="createRoomForm">
+                    @csrf
+                      <div class="modal-body">
+                        
+                        <input type="text" id="roomName" placeholder="Nhập tên phòng chat" name="name" class="form-control w-100" style="height: 45px; font-size: 18px;"> 
+
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-primary">Đồng ý</button>
+                      </div>
+                    </form>
+
+                  </div>
+                </div>
+              </div>
+
+
+              <!-- Add Member Modal -->
+              <div class="modal fade" id="addMemberModal" tabindex="-1" aria-labelledby="addMemberModalLabel" >
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h1 class="modal-title fs-5" id="addMemberModalLabel">Thêm thành viên vào phòng</h1>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="addMemberForm">
+                      @csrf                 
+                      <input type="hidden" id="room_id" name="room_id">
+                      <div class="modal-body">
+
+                      <label for="members">Chọn thành viên:</label>
+                      @if(count($users) > 0)
+                        <div class="list-group" id="membersList">
+                            @foreach ($users as $user)
+                            <div class="list-group-item d-flex justify-content-between align-items-center member-item">
+                                <!-- Tên thành viên -->
+                                <span class="member-name">{{ $user->name }}</span>
+                                <!-- Checkbox -->
+                                <input type="checkbox" name="members[]" value="{{ $user->id }}" class="form-check-input">
+                            </div>
+                            @endforeach
+                        </div>
+                      @else
+                        <div class="card-body">
+                          <p class="text-center text-black">Không có thành viên nào để hiển thị.</p>
+                        </div>
+                      @endif
+                      </div>
+                      <div class="modal-footer">
+                        <span id="addMemberError"></span>
+                        <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-primary">Thêm thành viên</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <div class="card mask-custom">
+              @if(count($rooms) > 0)
+                <div class="card-body">
+                  <ul class="list-unstyled mb-0">
+                  @foreach ($rooms as $room)
+                    <li class="p-2 border-bottom room-list" data-id="{{$room->id}}" style="border-bottom: 1px solid rgba(255,255,255,.3) !important;">
+                      <a href="#!" class="d-flex justify-content-between link-light">
+                        <div class="d-flex flex-row">
+                          <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-1.webp" alt="avatar"
+                            class="rounded-circle d-flex align-self-center me-3 shadow-1-strong" width="60">
+                          <div class="pt-1">
+                            <p class="fw-bold mb-0">{{ $room->name }}</p>
+                            <p class="small text-white">Lorem ipsum dolor sit.</p>
+                          </div>
+                        </div>
+                        <div class="pt-1">
+                          <p class="small text-white mb-1">5 mins ago</p>
+                        </div>
+                      </a>
+                    </li>
+
+                    <!-- <li class="p-2 border-bottom" style="border-bottom: 1px solid rgba(255,255,255,.3) !important;">
+                      <a href="#!" class="d-flex justify-content-between link-light">
+                        <div class="d-flex flex-row">
+                          <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-8.webp" alt="avatar"
+                            class="rounded-circle d-flex align-self-center me-3 shadow-1-strong" width="60">
+                          <div class="pt-1">
+                            <p class="fw-bold mb-0">John Doe</p>
+                            <p class="small text-white">Hello, Are you there?</p>
+                          </div>
+                        </div>
+                        <div class="pt-1">
+                          <p class="small text-white mb-1">Just now</p>
+                          <span class="badge bg-danger float-end">1</span>
+                        </div>
+                      </a>
+                    </li> --> 
+
+                    <!-- <li class="p-2">
+                      <a href="#!" class="d-flex justify-content-between link-light">
+                        <div class="d-flex flex-row">
+                          <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp" alt="avatar"
+                            class="rounded-circle d-flex align-self-center me-3 shadow-1-strong" width="60">
+                          <div class="pt-1">
+                            <p class="fw-bold mb-0">Brad Pitt</p>
+                            <p class="small text-white">Lorem ipsum dolor sit.</p>
+                          </div>
+                        </div>
+                        <div class="pt-1">
+                          <p class="small text-white mb-1">5 mins ago</p>
+                          <span class="text-white float-end"><i class="fas fa-check" ></i></span>
+                        </div>
+                      </a>
+                    </li> -->    
+                    @endforeach
+                  </ul>         
+                </div>
+              @else
+                <div class="card-body">
+                  <p class="text-center text-white">Không có phòng nào để hiển thị.</p>
+                </div>
+              @endif
+            </div>
+          </div>
+
+          {{-- Chat user room --}}
+          <div class="col-md-6 col-lg-7 col-xl-7 chat-section">
+            <div class="chat-container d-flex flex-column" style="height: 500px;">
+              <ul class="list-unstyled text-white overflow-auto flex-grow-1" id="list-chatRoom">
+                        
+              </ul>
+            </div>
+            <div class="form-outline form-white">
+              <form id="room-chat-form" >
+              @csrf
+              <div class="input-group">
+                <span class="input-group-text text-white border">
+                    <i class="fas fa-link"></i> <!-- Icon link ở đầu input -->
+                </span>
+                <input name="message" id="room-message" class="form-control" placeholder="Tin nhắn" rows="4">
+                <button type="submit" class="btn btn-light float-end">
+                    <i class="fas fa-paper-plane" style="color: transparent; background: linear-gradient(to bottom right, rgba(252, 203, 144, 1), rgba(213, 126, 235, 1)); -webkit-background-clip: text;"></i> <!-- Icon gửi -->
+                </button>
+              </div>
+              </form>
+            </div>
+          </div>
+
+          {{-- Modal xóa tin nhắn --}}
+
+          <!-- Modal -->
+          <div class="modal fade" id="roomdeleteChatModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="exampleModalLabel">Xóa tin nhắn</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <form action="" id="delete-room-chat-form">
+                  <div class="modal-body">
+                    <input type="hidden" name="id" id="delete-room-message-id">
+                    <p>Bạn có muốn xóa tin nhắn này?</p>
+                    <p><b id="delete-room-message" class="text-danger"></b></p>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger">Xóa</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {{-- Sidebar --}}
+    <div class="flex-shrink-0 p-3" id="side-bar" style="width: 280px; display:none">
+      <a href="/" class="d-flex align-items-center text-center pb-3 mb-3 link-body-emphasis text-decoration-none border-bottom">
+        <span class="fs-5 fw-semibold" id="showRoomName"></span>
+      </a>
+      <div class="d-flex justify-content-center mt-4 mb-4">
+        <button type="button" class="btn btn-primary" id="addMemberBtn" style="background: linear-gradient(to bottom right, rgba(252, 203, 144, 1), rgba(213, 126, 235, 1));">Thêm thành viên</button>
+      </div>
+      <span class="fs-5 fw-semibold">Danh sách thành viên</span>
+      <div class="list-group-item member-item bg-transparent border-0 d-flex flex-column gap-3 mt-2" id="members-list">
+        <!-- Member list -->
+        {{-- <div class="d-flex justify-content-between align-items-center" >
+          <span class="member-name">Thành viên 1</span>
+          <input type="checkbox" name="members[]" value="{{ $user->id }}" class="form-check-input">
+        </div> --}}
+      </div>
+    </div>    
+
+    <!-- Modal Thêm thành viên -->
+    <div class="modal fade" id="addMemberModal" tabindex="-1" aria-labelledby="addMemberModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="addMemberModalLabel">Thêm thành viên vào nhóm</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                  <div id="memberList">
+                      
+                  </div>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                  <button type="button" class="btn btn-primary" id="confirmAddMember">Thêm thành viên</button>
+              </div>
+          </div>
+      </div>
+    </div>
+
+
+    <!-- Modal Xóa Thành Viên -->
+    <div class="modal fade" id="deleteMemberModal" tabindex="-1" aria-labelledby="deleteMemberModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteMemberModalLabel">Xóa Thành Viên</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Bạn có chắc chắn muốn xóa thành viên này khỏi phòng?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Hủy</button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteMember">Xóa</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</div>  
+
+  <!-- End your project here-->
+
+  <!-- MDB -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ asset('assets/js/mdb.min.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs"></script>
+  
+  <script>
+    var user_id = @json(auth()->user()->id);
+    var global_room_id;
+  </script>
+
+  <script src="{{ asset('js/app.js') }}"></script>
+  <script src="{{ asset('assets/js/custom.js') }}"></script>
+  <!-- Custom scripts -->
+  <script type="text/javascript"></script>
+</body>
+
+</html>

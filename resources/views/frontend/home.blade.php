@@ -17,6 +17,34 @@
   <script src="{{asset('assets')}}/js/app.js"></script>
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
+  <!-- Modal Create Room -->
+<div class="modal fade" id="createRoomModal" tabindex="-1" role="dialog" aria-labelledby="createRoomModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createRoomModalLabel">Create Room</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Form Create Room -->
+        <form action="{{ route('create.room') }}" method="POST">
+          @csrf
+          <div class="form-group">
+            <label for="roomName">Room Name</label>
+            <input type="text" class="form-control" id="roomName" name="room_name" required>
+          </div>
+          <div class="form-group">
+            <label for="members">Add Members</label>
+            <input type="text" class="form-control" id="members" name="members" placeholder="Enter usernames" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Create Room</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- Site wrapper -->
 <div class="wrapper">
 

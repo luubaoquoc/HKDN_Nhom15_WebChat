@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Middleware\HandleRoleAdmin;
 use App\Http\Controllers\frontend\ProfileController;
 use App\Http\Controllers\frontend\ForgotPasswordController;
+use App\Http\Controllers\frontend\RoomController;
 
 
 /*
@@ -47,13 +48,15 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
 
+    // room routes
+    Route::post('/create-room', [RoomController::class, 'store'])->name('create.room');
     // Chat Routes (Requires Auth)
-    Route::get('/rooms', [ChatController::class, 'index'])->name('rooms.index'); // View all rooms
-    Route::get('/rooms/create', [ChatController::class, 'create'])->name('rooms.create'); // Create room form
-    Route::post('/rooms', [ChatController::class, 'store'])->name('rooms.store'); // Store new room
-    Route::get('/rooms/{room}', [ChatController::class, 'show'])->name('rooms.show'); // Show room messages (Note the model binding)
-    Route::post('/rooms/{room}/add-user', [ChatController::class, 'addUserToRoom'])->name('rooms.addUser'); // Add user to room
-    Route::post('/rooms/{room}/messages', [ChatController::class, 'sendMessage'])->name('rooms.sendMessage'); // Send message
+    // Route::get('/rooms', [ChatController::class, 'index'])->name('rooms.index'); // View all rooms
+    // Route::get('/rooms/create', [ChatController::class, 'create'])->name('rooms.create'); // Create room form
+    // Route::post('/rooms', [ChatController::class, 'store'])->name('rooms.store'); // Store new room
+    // Route::get('/rooms/{room}', [ChatController::class, 'show'])->name('rooms.show'); // Show room messages (Note the model binding)
+    // Route::post('/rooms/{room}/add-user', [ChatController::class, 'addUserToRoom'])->name('rooms.addUser'); // Add user to room
+    // Route::post('/rooms/{room}/messages', [ChatController::class, 'sendMessage'])->name('rooms.sendMessage'); // Send message
 
 });
 

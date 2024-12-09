@@ -27,38 +27,34 @@
 
       <ul class="sidebar-menu" data-widget="tree">
 
-        {{-- <li>
-          <a href="{{ route('users.index') }}">
-            <i class="fa fa-th"></i> <span>Quản lý người dùng </span>
+        <li>
+          <a href="#" data-toggle="modal" data-target="#createRoomModal">
+            <i class="fa fa-th"></i> <span>Create Rooms</span>
             <span class="pull-right-container">
-              <small class="label pull-right bg-green">FE</small>
+              <small class="label pull-right bg-green">+</small>
             </span>
           </a>
         </li>
 
-        <li class="treeview">
-          <a href="#">
-            <i class="fa fa-dashboard"></i> <span>Quản lý banner</span>
-            <span class="pull-right-container">
-              <i class="fa fa-angle-left pull-right"></i>
-            </span>
-          </a>
-          <ul class="treeview-menu">
-            <li><a href=""><i class="fa fa-circle-o"></i> Dashboard v1</a></li>
-            <li><a href=""><i class="fa fa-circle-o"></i> Dashboard v2</a></li>
-          </ul>
-        </li>
         
-        <li>
-          <a href="">
-            <i class="fa fa-th"></i> <span>Quản lý Room Chats</span>
-            <span class="pull-right-container">
-              <small class="label pull-right bg-green">Hot</small>
-            </span>
-          </a>
-        </li> --}}
         
       </ul>
+      <ul>
+        @foreach ($rooms as $room)
+            <li>
+                <a href="{{ route('rooms.show', $room->id) }}">{{ $room->name }}</a>
+                <small>({{ $room->users->count() }} members)</small>
+            </li>
+        @endforeach
+    </ul>
     </section>
     <!-- /.sidebar -->
   </aside>
+
+ <!-- Custom Script for Modal Handling -->
+ <script>
+  $('#createRoomModal').on('hidden.bs.modal', function () {
+      // Tự động làm mới giao diện hoặc chuyển hướng nếu cần
+      window.location.reload(); // Hoặc chuyển đến trang khác
+  });
+</script>

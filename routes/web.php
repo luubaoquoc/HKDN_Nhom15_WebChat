@@ -39,6 +39,7 @@ Route::post('/delete-room-chats', [HomeController::class,'deleteRoomChats'])->na
 Route::get('/room-members', [HomeController::class, 'showRoomMembers'])->name('showRoomMembers');
 Route::post('/delete-room-chats', [HomeController::class,'deleteRoomChats'])->name('deleteRoomChats');
 Route::post('/remove-member', [HomeController::class, 'removeMember'])->name('removeMember');
+Route::post('/add-members', [HomeController::class, 'addMembers1'])->name('add.members1');
 
 
 //route Admin

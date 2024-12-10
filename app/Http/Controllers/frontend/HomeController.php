@@ -80,6 +80,62 @@ class HomeController extends Controller
             return response()->json(['error' => 'Có lỗi xảy ra, vui lòng thử lại!'], 500);
         }
     }
+    public function addMembers1(Request $request)
+{
+    try {
+        // Kiểm tra nếu không có thành viên được chọn
+        if (!isset($request->members) || count($request->members) == 0) {
+            return response()->json(['error' => 'Vui lòng chọn ít nhất một thành viên.'], 400);
+        }
+
+        // Thêm người tạo phòng vào danh sách thành viên (nếu chưa có)
+        $creatorMember = Member::firstOrCreate([
+            'room_id' => $request->room_id,
+            'user_id' => auth()->id(),  // Người tạo phòng
+        ], [
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Log::info("Thêm người tạo phòng vào room_id: {$request->room_id}");
+
+        // Thêm các thành viên mới vào phòng, tránh trùng lặp
+        $addedMembers = 0;  // Biến đếm số thành viên được thêm
+        foreach ($request->members as $userId) {
+            // Kiểm tra nếu người dùng đã là thành viên trong phòng
+            $existingMember = Member::where('room_id', $request->room_id)
+                                    ->where('user_id', $userId)
+                                    ->first();
+
+            // Nếu chưa có, mới thêm vào phòng
+            if (!$existingMember) {
+                Member::create([
+                    'room_id' => $request->room_id,
+                    'user_id' => $userId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                $addedMembers++;  // Tăng số thành viên đã thêm
+            }
+        }
+
+        // Kiểm tra nếu có thành viên mới được thêm
+        if ($addedMembers > 0) {
+            Log::info("Đã thêm {$addedMembers} thành viên vào phòng room_id: {$request->room_id}");
+            return response()->json(['msg' => 'Thêm thành viên thành công', 'success' => true], 200);
+        } else {
+            return response()->json(['msg' => 'Không có thành viên mới nào được thêm (tất cả đã tồn tại)', 'success' => true], 200);
+        }
+
+    } catch (\Exception $e) {
+        // Ghi log lỗi nếu có
+        Log::error('Lỗi thêm thành viên: ' . $e->getMessage());
+        return response()->json(['error' => 'Có lỗi xảy ra, vui lòng thử lại!'], 500);
+    }
+}
+
+
+
 
     public function saveRoomChat(Request $request){
         try {
@@ -161,5 +217,10 @@ class HomeController extends Controller
         }
     }
     
+
+ 
+
+
+
 
 }

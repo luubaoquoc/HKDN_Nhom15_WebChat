@@ -259,8 +259,131 @@
         <span class="fs-5 fw-semibold" id="showRoomName"></span>
       </a>
       <div class="d-flex justify-content-center mt-4 mb-4">
-        <button type="button" class="btn btn-primary" id="addMemberBtn" style="background: linear-gradient(to bottom right, rgba(252, 203, 144, 1), rgba(213, 126, 235, 1));">Thêm thành viên</button>
-      </div>
+        
+      
+      <button type="button" class="btn btn-primary" id="addMemberBtn" style="background: linear-gradient(to bottom right, rgba(252, 203, 144, 1), rgba(213, 126, 235, 1));">Thêm thành viên</button>
+      <!-- Nút thêm thành viên -->
+
+        <!-- Modal hoặc form để chọn thành viên -->
+        <!-- Modal Thêm Thành Viên (Kiểu khung thông báo) -->
+        <div id="addMembersModal1" class="custom-modal">
+          <div class="custom-modal-content">
+            <form id="addMembersForm1">
+              <h5 class="modal-title">Chọn thành viên</h5>
+              <div class="modal-body">
+                @if(count($users) > 0)
+                  <div class="list-group" id="membersList">
+                    @foreach($users as $user)
+                      <div class="list-group-item d-flex justify-content-between align-items-center member-item">
+                        <!-- Tên thành viên -->
+                        <span class="member-name">{{ $user->name }}</span>
+                        <!-- Checkbox -->
+                        <input type="checkbox" name="members[]" value="{{ $user->id }}" class="form-check-input">
+                      </div>
+                    @endforeach
+                  </div>
+                @else
+                  <p class="text-center text-black">Không có thành viên nào để hiển thị.</p>
+                @endif
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-dark" id="closeCustomModal">Đóng</button>
+                <button type="submit" class="btn btn-primary">Thêm</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <style>
+        /* Tùy chỉnh modal */
+        .custom-modal {
+          display: none; /* Ẩn mặc định */
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5); /* Nền tối */
+          z-index: 9999;
+          justify-content: center;
+          align-items: center;
+        }
+
+        /* Khung modal nhỏ gọn */
+        .custom-modal-content {
+          background: #fff;
+          border-radius: 8px;
+          padding: 20px;
+          width: 400px;
+          max-width: 90%; /* Giới hạn chiều rộng */
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+          position: relative;
+          top: 50%; /* Canh giữa theo chiều dọc */
+          left: 50%; /* Canh giữa theo chiều ngang */
+          transform: translate(-50%, -50%); /* Canh giữa chính xác */
+        }
+
+        .custom-modal .modal-title {
+          font-size: 18px;
+          font-weight: bold;
+          margin-bottom: 15px;
+        }
+
+        .custom-modal .modal-body {
+          max-height: 300px;
+          overflow-y: auto; /* Cuộn nội dung nếu quá dài */
+        }
+
+        .custom-modal .modal-footer {
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+        }
+        </style>
+
+
+
+
+
+      <script>
+          // Hiển thị modal khi nhấn nút thêm thành viên
+          document.getElementById('addMemberBtn').addEventListener('click', function() {
+              document.getElementById('addMembersModal1').style.display = 'block';
+          });
+      // Đóng modal khi nhấn nút "Đóng"
+      document.getElementById('closeCustomModal').addEventListener('click', function () {
+          document.getElementById('addMembersModal1').style.display = 'none';
+      });
+          // Gửi form khi chọn thành viên
+          document.getElementById('addMembersForm1').addEventListener('submit', function(event) {
+              event.preventDefault();
+
+              var formData = new FormData(this);
+              var roomId = {{ $room->id }}; // ID phòng hiện tại
+              formData.append('room_id', roomId);
+
+              fetch('/add-members', {
+                  method: 'POST',
+                  body: formData,
+                  headers: {
+                      'X-CSRF-TOKEN': '{{ csrf_token() }}' // Đảm bảo gửi CSRF token
+                  }
+              })
+              .then(response => response.json())
+              .then(data => {
+                  alert(data.msg || data.error);
+                  if (data.success) {
+                      // Đóng modal hoặc làm mới danh sách thành viên
+                      document.getElementById('addMembersModal1').style.display = 'none';
+                  }
+              });
+          });
+      </script>
+
+      <!-- Modal Thêm thành viên -->
+      
+
+    </div>
       <span class="fs-5 fw-semibold">Danh sách thành viên</span>
       <div class="list-group-item member-item bg-transparent border-0 d-flex flex-column gap-3 mt-2" id="members-list">
         <!-- Member list -->

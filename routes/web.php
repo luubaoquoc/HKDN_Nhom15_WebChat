@@ -28,23 +28,28 @@ Route::post('/register', [CustomerController::class,'postRegister']);
 Route::middleware(['auth', 'verified'])->get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
 Route::get('/email/verify/{id}', [VerificationController::class, 'verify'])->name('verification.verify');
 
-
 //route Room
-// Route::middleware(['auth', 'verified'])->get('/rooms', [HomeController::class, 'loadRooms'])->name('rooms');
-Route::middleware(['auth', 'verified'])->post('/create-room', [HomeController::class, 'createRoom'])->name('createRoom');
-Route::middleware(['auth', 'verified'])->post('/add-member', [HomeController::class, 'addMembers'])->name('addMembers');
-Route::post('/save-room-chat', [HomeController::class,'saveRoomChat'])->name('saveRoomChat');
-Route::post('/load-room-chats', [HomeController::class,'loadRoomChats'])->name('loadRoomChats');
-Route::post('/delete-room-chats', [HomeController::class,'deleteRoomChats'])->name('deleteRoomChats');
-Route::get('/room-members', [HomeController::class, 'showRoomMembers'])->name('showRoomMembers');
-Route::post('/delete-room-chats', [HomeController::class,'deleteRoomChats'])->name('deleteRoomChats');
-Route::post('/remove-member', [HomeController::class, 'removeMember'])->name('removeMember');
-
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::post('/create-room', [HomeController::class, 'createRoom'])->name('createRoom');
+    Route::post('/add-member', [HomeController::class, 'addMembers'])->name('addMembers');
+    Route::post('/save-room-chat', [HomeController::class,'saveRoomChat'])->name('saveRoomChat');
+    Route::post('/load-room-chats', [HomeController::class,'loadRoomChats'])->name('loadRoomChats');
+    Route::post('/delete-room-chats', [HomeController::class,'deleteRoomChats'])->name('deleteRoomChats');
+    Route::get('/room-members', [HomeController::class, 'showRoomMembers'])->name('showRoomMembers');
+    Route::post('/remove-member', [HomeController::class, 'removeMember'])->name('removeMember');
+    Route::post('/upload', [HomeController::class,'saveRoomChat'])->name('upload');
+    
+    // Pin message routes
+    Route::post('/pin-message', [HomeController::class, 'pinMessage'])->name('pin.message');
+    Route::post('/unpin-message', [HomeController::class, 'unPinMessage'])->name('unpin.message');
+    Route::get('/get-pinned-messages', [HomeController::class, 'getPinnedMessages'])->name('get.pinned.messages');
+    Route::post('/upload-file', [HomeController::class, 'uploadFile'])->name('upload.file');
+});
 
 //route Admin
-Route::get('/admin/login', [UserController::class, 'getLogin']) ->name('admin.login');
-Route::post('/admin/login', [UserController::class, 'postLogin']) ->name('admin.login.post');
-Route::get('/admin/logout', [UserController::class, 'getLogout']) ->name('admin.logout');
+Route::get('/admin/login', [UserController::class, 'getLogin'])->name('admin.login');
+Route::post('/admin/login', [UserController::class, 'postLogin'])->name('admin.login.post');
+Route::get('/admin/logout', [UserController::class, 'getLogout'])->name('admin.logout');
 
 //Route prefix admin, middleware login admin
 Route::prefix('admin')->middleware('handleLoginAdmin')->group(function () {
@@ -57,6 +62,4 @@ Route::prefix('admin')->middleware('handleLoginAdmin')->group(function () {
     Route::get('/profile/show', [UserController::class, 'showProfileAdmin'])->name('admin.profile.show');
     Route::get('/profile/update', [UserController::class, 'showFormUpdateAdmin'])->name('admin.profile.update');
     Route::patch('/profile/update', [UserController::class, 'updateProfileAdmin']);
-
 });
-

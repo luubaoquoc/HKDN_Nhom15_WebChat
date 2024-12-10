@@ -43,6 +43,7 @@ $(document).ready(function(){
 
         loadRoomChats()
         loadRoomMembers()
+        loadPinnedMessages() // Thêm hàm load tin nhắn đã ghim
 
     });
 
@@ -134,7 +135,10 @@ $(document).ready(function(){
                             <p class="mb-0">
                                 ${res.data.content}
                             </p>
-                            <i class="far fa-trash-alt deleteRoomMessage" aria-hidden="true" data-id = "${res.data.id}" data-bs-toggle="modal" data-bs-target="#roomdeleteChatModal"></i>
+                            <div>
+                                <i class="fas fa-thumbtack me-2 pinMessage" aria-hidden="true" data-id="${res.data.id}" data-pinned="false"></i>
+                                <i class="far fa-trash-alt deleteRoomMessage" aria-hidden="true" data-id="${res.data.id}" data-bs-toggle="modal" data-bs-target="#roomdeleteChatModal"></i>
+                            </div>
                         </div>
                         </div>
                         <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp" alt="avatar"
@@ -221,7 +225,10 @@ $(document).ready(function(){
                                         <p class="mb-0 text-wrap">
                                             ${chats[i].content}        
                                         </p>
-                                        <i class="far fa-trash-alt deleteRoomMessage" aria-hidden="true" data-id = "${chats[i].id}" data-bs-toggle="modal" data-bs-target="#roomdeleteChatModal"></i>
+                                        <div>
+                                            <i class="fas fa-thumbtack me-2 pinMessage ${chats[i].pinned ? 'text-warning' : ''}" aria-hidden="true" data-id="${chats[i].id}" data-pinned="${chats[i].pinned}"></i>
+                                            <i class="far fa-trash-alt deleteRoomMessage" aria-hidden="true" data-id="${chats[i].id}" data-bs-toggle="modal" data-bs-target="#roomdeleteChatModal"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </li> `
@@ -241,7 +248,10 @@ $(document).ready(function(){
                                     <p class="mb-0">
                                         ${chats[i].content}
                                     </p>
-                                    <i class="far fa-trash-alt deleteRoomMessage" aria-hidden="true" data-id = "${chats[i].id}" data-bs-toggle="modal" data-bs-target="#roomdeleteChatModal"></i>                  
+                                    <div>
+                                        <i class="fas fa-thumbtack me-2 pinMessage ${chats[i].pinned ? 'text-warning' : ''}" aria-hidden="true" data-id="${chats[i].id}" data-pinned="${chats[i].pinned}"></i>
+                                        <i class="far fa-trash-alt deleteRoomMessage" aria-hidden="true" data-id="${chats[i].id}" data-bs-toggle="modal" data-bs-target="#roomdeleteChatModal"></i>
+                                    </div>                  
                                 </div>
                                 </div>
                                 <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp" alt="avatar"
@@ -412,6 +422,115 @@ $(document).ready(function(){
         });
     }); 
 
+    // Thêm sự kiện click cho nút pin
+    $(document).on('click', '.pinMessage', function() {
+        var messageId = $(this).data('id');
+        var isPinned = $(this).data('pinned');
+        var $icon = $(this);
+        
+        $.ajax({
+            url: '/pin-message',
+            type: 'POST',
+            data: {
+                message_id: messageId,
+                pinned: !isPinned,
+                room_id: global_room_id
+            },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(res) {
+                if (res.success) {
+                    $icon.data('pinned', !isPinned);
+                    $icon.toggleClass('text-warning');
+                    loadPinnedMessages(); // Tải lại danh sách tin nhắn đã ghim
+                }
+            },
+            error: function(xhr) {
+                alert('Lỗi: ' + xhr.responseText);
+            }
+        });
+    });
+
+    // Thêm hàm load tin nhắn đã ghim
+    function loadPinnedMessages() {
+        $.ajax({
+            url: '/get-pinned-messages',
+            type: 'GET',
+            data: {
+                room_id: global_room_id
+            },
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(res) {
+                $('#pinned-messages').html('');
+                if (res.pinnedMessages && res.pinnedMessages.length > 0) {
+                    res.pinnedMessages.forEach(function(message) {
+                        const formattedTime = dayjs(message.created_at).format('HH:mm');
+                        let pinnedHtml = `
+                            <div class="pinned-message" id="pinned-${message.id}">
+                                <div class="card mask-custom">
+                                    <div class="card-header">
+                                        <strong>${message.user.name}</strong>
+                                        <small>${formattedTime}</small>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>${message.content}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        $('#pinned-messages').append(pinnedHtml);
+                    });
+                }
+            },
+            error: function(xhr) {
+                console.error('Lỗi khi tải tin nhắn đã ghim:', xhr.responseText);
+            }
+        });
+    }
+    fetch('/pin-message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            message_id: selectedMessageId, // ID của tin nhắn
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Ghim tin nhắn thành công:', data);
+        } else {
+            console.error('Lỗi:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Lỗi không mong muốn:', error);
+    });
+    fetch('/pin-message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            message_id: selectedMessageId, // ID của tin nhắn
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Ghim tin nhắn thành công:', data);
+        } else {
+            console.error('Lỗi:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Lỗi không mong muốn:', error);
+    });
+        
 });
-
-

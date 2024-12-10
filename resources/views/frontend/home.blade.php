@@ -351,44 +351,73 @@
       var user_id = @json(auth()->user()->id);
       var global_room_id;
 
+      // Xử lý khi click vào nút upload
       document.getElementById('upload-trigger').addEventListener('click', function() {
         document.getElementById('file-upload').click();
       });
 
+      // Xử lý khi chọn file
       document.getElementById('file-upload').addEventListener('change', function(e) {
         var file = e.target.files[0];
+        if (!file) return;
+
+        // Xóa preview cũ nếu có
+        var existingPreview = document.querySelector('.file-preview-container');
+        if (existingPreview) {
+          existingPreview.remove();
+        }
+
         var fileName = file.name;
+        var fileSize = (file.size / (1024 * 1024)).toFixed(2); // Convert to MB
         
-        // Display file name in chat input
-        var messageInput = document.getElementById('room-message');
-        
-        // Create container for file preview
+        // Tạo container cho preview
         var previewContainer = document.createElement('div');
-        previewContainer.style.position = 'relative';
-        previewContainer.style.marginBottom = '10px';
+        previewContainer.className = 'file-preview-container';
+        previewContainer.style.margin = '10px 0';
+        previewContainer.style.padding = '10px';
+        previewContainer.style.border = '1px solid #ddd';
+        previewContainer.style.borderRadius = '5px';
         
-        // Create file name display with X button
-        var fileNameDisplay = document.createElement('h5');
-        fileNameDisplay.style.display = 'flex';
-        fileNameDisplay.style.alignItems = 'center';
-        fileNameDisplay.style.gap = '10px';
-        fileNameDisplay.textContent = fileName;
+        // Tạo thông tin file
+        var fileInfo = document.createElement('div');
+        fileInfo.style.display = 'flex';
+        fileInfo.style.justifyContent = 'space-between';
+        fileInfo.style.alignItems = 'center';
+        fileInfo.style.marginBottom = '10px';
         
-        var closeBtn = document.createElement('span');
-        closeBtn.innerHTML = '&times;';
-        closeBtn.style.cursor = 'pointer';
-        closeBtn.style.color = 'red';
-        closeBtn.onclick = function() {
+        // Tên file và kích thước
+        var fileDetails = document.createElement('div');
+        fileDetails.innerHTML = `
+          <span style="font-weight: bold">${fileName}</span>
+          <span style="color: #666; margin-left: 10px">${fileSize} MB</span>
+        `;
+        
+        // Nút xóa
+        var removeBtn = document.createElement('button');
+        removeBtn.innerHTML = '&times;';
+        removeBtn.style.border = 'none';
+        removeBtn.style.background = 'none';
+        removeBtn.style.color = '#ff4444';
+        removeBtn.style.fontSize = '20px';
+        removeBtn.style.cursor = 'pointer';
+        removeBtn.onclick = function() {
           previewContainer.remove();
           document.getElementById('file-upload').value = '';
         };
-        fileNameDisplay.appendChild(closeBtn);
-        
-        // Create and display image preview if file is image
+
+        fileInfo.appendChild(fileDetails);
+        fileInfo.appendChild(removeBtn);
+        previewContainer.appendChild(fileInfo);
+
+        // Preview ảnh nếu là file ảnh
         if (file.type.startsWith('image/')) {
           var preview = document.createElement('img');
-          preview.style.maxWidth = '200px';
-          preview.style.marginTop = '10px';
+          preview.style.maxWidth = '300px';
+          preview.style.maxHeight = '200px';
+          preview.style.objectFit = 'contain';
+          preview.style.display = 'block';
+          preview.style.margin = '10px auto';
+          
           var reader = new FileReader();
           reader.onload = function(e) {
             preview.src = e.target.result;
@@ -396,11 +425,24 @@
           reader.readAsDataURL(file);
           previewContainer.appendChild(preview);
         }
-        
-        previewContainer.appendChild(fileNameDisplay);
-        messageInput.parentNode.insertBefore(previewContainer, messageInput);
+
+        // Thêm preview vào form
+        var chatForm = document.getElementById('room-message').parentNode;
+        chatForm.insertBefore(previewContainer, document.getElementById('room-message'));
+      });
+
+      // Xử lý khi form được submit
+      document.querySelector('form').addEventListener('submit', function() {
+        // Xóa preview container nếu có
+        var previewContainer = document.querySelector('.file-preview-container');
+        if (previewContainer) {
+          previewContainer.remove();
+        }
+        // Reset input file
+        document.getElementById('file-upload').value = '';
       });
     </script>
+
 
     <script src="{{ asset('js/app.js') }}"></script>
     <script src="{{ asset('assets/js/custom.js') }}"></script>

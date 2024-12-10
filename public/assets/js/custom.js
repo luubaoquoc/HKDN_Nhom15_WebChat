@@ -111,17 +111,67 @@ $(document).ready(function(){
         $.ajax({
             url:"/save-room-chat",
             type:"POST",
-            data: {
-                room_id: global_room_id,
-                message: message
-            },
+            data: (() => {
+                const formData = new FormData();
+                
+                // Log initial values
+                console.log('Initial values:', {
+                    room_id: global_room_id,
+                    message: message,
+                });
+                
+                formData.append('room_id', global_room_id);
+                
+                // Only append message if not empty
+                if (message && message.trim() !== '') {
+                    formData.append('message', message);
+                }
+                
+                // Handle file upload
+                const fileInput = $('#file-upload')[0];
+                if (fileInput && fileInput.files && fileInput.files[0]) {
+                    console.log('File details:', {
+                        name: fileInput.files[0].name,
+                        size: fileInput.files[0].size,
+                        type: fileInput.files[0].type
+                    });
+                    formData.append('file', fileInput.files[0]);
+                }
+                
+                // Log final FormData contents
+                console.log('=== FormData Contents ===');
+                for (let pair of formData.entries()) {
+                    console.log(`${pair[0]}: `, pair[1] instanceof File ? 
+                        `File: ${pair[1].name} (${pair[1].type})` : 
+                        pair[1]
+                    );
+                }
+                
+                return formData;
+            })(),
+            processData: false,
+            contentType: false,
             headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                // 'Content-Type': 'multipart/form-data'
+                
             },
             success: function(res){
                 console.log(res)
+                // Clear form inputs after successful submission
                 $('#room-message').val('')
+                $('#file-upload').val('')
+                // Clear any preview image if it exists
+                $('.preview-image').remove()
+                
                 const formattedTime = dayjs(res.data.created_at).format('HH:mm');
+
+                let messageContent = res.data.content;
+                if (res.file_type === 'image') {
+                    messageContent = `<img src="${res.data.file_url}" class="img-fluid" style="width: 200px; height: 200px; object-fit: cover;">`;
+                } else if (res.file_type === 'document') {
+                    messageContent = `<a href="${res.data.file_url}" target="_blank">${res.data.content}</a>`;
+                }
 
                 let html = `
                     <li class="d-flex justify-content-between mb-4 current-user-chat" id="${res.data.id}-chat">
@@ -133,7 +183,7 @@ $(document).ready(function(){
                         </div>
                         <div class="card-body d-flex justify-content-between align-items-center">
                             <p class="mb-0">
-                                ${res.data.content}
+                                ${messageContent}
                             </p>
                             <div>
                                 <i class="fas fa-thumbtack me-2 pinMessage" aria-hidden="true" data-id="${res.data.id}" data-pinned="false"></i>
@@ -149,7 +199,7 @@ $(document).ready(function(){
                 $('#list-chatRoom').append(html)
             },
             error: function(xhr) {
-                var errorMessage = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
+                var errorMessa  ge = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
                 alert('Lỗi: \n' + errorMessage)
             }
         })

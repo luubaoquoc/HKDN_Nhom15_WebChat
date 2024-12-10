@@ -62,9 +62,12 @@
             <div class="d-flex justify-content-between align-items-center">
               <h5 class="font-weight-bold mb-3 text-center text-white ms-5">Chat</h5>
               <!-- Button trigger modal -->
+              @if(auth()->user()->role == 1 || auth()->user()->role == 2)
               <button type="button" class="btn btn-light mb-3 me-5" data-bs-toggle="modal" data-bs-target="#createRoomModal">
                 Thêm nhóm mới
               </button>
+    @endif
+              
 
               <!-- Modal -->
               <div class="modal fade" id="createRoomModal" tabindex="-1" aria-labelledby="exampleModalLabel" >
@@ -259,10 +262,13 @@
         <span class="fs-5 fw-semibold" id="showRoomName"></span>
       </a>
       <div class="d-flex justify-content-center mt-4 mb-4">
-        
-      
+        <!-- Nút thêm thành viên -->
+      @if(auth()->user()->role == 1 || auth()->user()->role == 2)
       <button type="button" class="btn btn-primary" id="addMemberBtn" style="background: linear-gradient(to bottom right, rgba(252, 203, 144, 1), rgba(213, 126, 235, 1));">Thêm thành viên</button>
-      <!-- Nút thêm thành viên -->
+      
+@endif
+
+      
 
         <!-- Modal hoặc form để chọn thành viên -->
         <!-- Modal Thêm Thành Viên (Kiểu khung thông báo) -->

@@ -13,6 +13,8 @@
         "laravel/framework": "^9.0",
         "laravel/sanctum": "^2.14",
         "laravel/tinker": "^2.7",
+        "predis/predis": "^2.3",
+        "pusher/pusher-php-server": "^7.2",
         "realrashid/sweet-alert": "^7.2"
     },
     "require-dev": {

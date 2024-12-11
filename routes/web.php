@@ -7,6 +7,7 @@ use App\Http\Controllers\frontend\CustomerController;
 use App\Http\Controllers\frontend\HomeController;
 use App\Http\Controllers\frontend\ChatController;
 use App\Http\Controllers\frontend\VerificationController;
+use App\Http\Controllers\frontend\UserProfileController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Middleware\HandleRoleAdmin;
 use App\Http\Controllers\frontend\ProfileController;
@@ -25,12 +26,12 @@ use App\Http\Controllers\frontend\RoomController;
 |
 */
 
-//route frontend
+//route home
 Route::get('/', [CustomerController::class,'login'])->name('login');
 Route::post('/', [CustomerController::class,'postLogin']);
 Route::get('/register', [CustomerController::class,'register'])->name('register');
 Route::post('/register', [CustomerController::class,'postRegister']);
-Route::middleware(['auth', 'verified'])->get('/home', [HomeController::class, 'index'])->name('index');
+Route::middleware(['auth', 'verified'])->get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
 Route::get('/email/verify/{id}', [VerificationController::class, 'verify'])->name('verification.verify');
 Route::get('/logout', [CustomerController::class, 'getLogout']) ->name('logout');
 Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
@@ -58,6 +59,18 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware('auth')->post('/send-message', [ChatController::class, 'sendMessage']);
 
+
+
+//route Room
+// Route::middleware(['auth', 'verified'])->get('/rooms', [HomeController::class, 'loadRooms'])->name('rooms');
+Route::middleware(['auth', 'verified'])->post('/create-room', [HomeController::class, 'createRoom'])->name('createRoom');
+Route::middleware(['auth', 'verified'])->post('/add-member', [HomeController::class, 'addMembers'])->name('addMembers');
+Route::post('/save-room-chat', [HomeController::class,'saveRoomChat'])->name('saveRoomChat');
+Route::post('/load-room-chats', [HomeController::class,'loadRoomChats'])->name('loadRoomChats');
+Route::post('/delete-room-chats', [HomeController::class,'deleteRoomChats'])->name('deleteRoomChats');
+Route::get('/room-members', [HomeController::class, 'showRoomMembers'])->name('showRoomMembers');
+Route::post('/delete-room-chats', [HomeController::class,'deleteRoomChats'])->name('deleteRoomChats');
+Route::post('/remove-member', [HomeController::class, 'removeMember'])->name('removeMember');
 
 
 //route Admin

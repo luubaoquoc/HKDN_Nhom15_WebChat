@@ -35,7 +35,7 @@ class CustomerController extends Controller
                 Auth::logout();
                 return redirect()->back()->with('msgError', 'Tài khoản của bạn chưa được kích hoạt. Vui lòng kiểm tra email.');
             }
-            return redirect()->route('home');
+            return redirect()->route('dashboard');
         }
         return redirect()->back()->with('msgError', 'Đăng nhập không thành công!!!');
         

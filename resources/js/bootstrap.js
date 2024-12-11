@@ -8,6 +8,7 @@ window._ = require('lodash');
 
 window.axios = require('axios');
 
+window.axios.defaults.headers.common['X-CSRF-TOKEN'] = document.head.querySelector('meta[name="csrf-token"]').content;
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 /**
@@ -16,28 +17,23 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
  * allows your team to easily build robust real-time web applications.
  */
 
-// import Echo from 'laravel-echo';
-
-// window.Pusher = require('pusher-js');
-
-// window.Echo = new Echo({
-//     broadcaster: 'pusher',
-//     key: process.env.MIX_PUSHER_APP_KEY,
-//     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
-//     forceTLS: true
-// });
-import Echo from 'laravel-echo';
-import { io } from 'socket.io-client';
-
-window.io = io;
+import Echo from "laravel-echo";
+window.Pusher = require('pusher-js');
 
 window.Echo = new Echo({
-    broadcaster: 'socket.io',
-    host: `${window.location.hostname}:6001`,
+    broadcaster: 'pusher',
+    key: 'your_app_key',
+    wsHost: window.location.hostname,
+    wsPort: 6001,
+    forceTLS: false,
+    disableStats: true,
+    enabledTransports: ['ws', 'wss']
 });
 
+window.Echo.connector.pusher.connection.bind('connected', () => {
+    console.log('WebSocket connected');
+});
 
-Echo.private(`room.${roomId}`)
-    .listen('MessageSent', (e) => {
-        console.log('New message:', e.message);
-    });
+window.Echo.connector.pusher.connection.bind('error', (err) => {
+    console.error('WebSocket error:', err);
+});

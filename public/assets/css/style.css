@@ -1,42 +1,198 @@
-.box-tools .breadcrumb{
-	margin-bottom: 0;
-	padding: 5px;
-	background: none;
+/* Reset margin, padding và background cho breadcrumb */
+.box-tools .breadcrumb {
+    margin-bottom: 0;
+    padding: 5px;
+    background: transparent; /* Thay 'none' bằng 'transparent' cho rõ ràng */
 }
-.box-tools .breadcrumb li{
-	margin-right: 15px;
-	float: left
+
+.box-tools .breadcrumb li {
+    margin-right: 15px;
+    float: left;
 }
-.box-tools .breadcrumb li a{
-	color: #333
+
+.box-tools .breadcrumb li a {
+    color: #333;
 }
-.content-header > .breadcrumb{
-	padding: 0 7px
+
+
+/* Thêm padding cho breadcrumb trong content-header */
+.content-header > .breadcrumb {
+    padding: 0 7px;
 }
-.content .panel-body{
-	padding: 5px
+
+/* Padding cho body của panel */
+.content .panel-body {
+    padding: 5px;
 }
-.table-form .form-inline .input-group>.form-control{
-	width: 300px;
+
+/* Chỉnh sửa width cho form control */
+.table-form .form-inline .input-group > .form-control {
+    width: 300px;
 }
-.panel-pagination .panel-body{
-	padding-top: 0;
-	padding-bottom: 0;
+
+/* Padding cho panel-pagination */
+.panel-pagination .panel-body {
+    padding-top: 0;
+    padding-bottom: 0;
 }
-.post-category{
-	padding-left: 0
+
+/* Loại bỏ padding-left mặc định cho post-category */
+.post-category {
+    padding-left: 0;
 }
-.post-category ul{
-	padding-left: 15px
+
+.post-category ul {
+    padding-left: 15px;
 }
-.btn-social{
-	padding-left: 32px
+
+/* Padding cho btn-social */
+.btn-social {
+    padding-left: 32px;
 }
+
 .btn-social > :first-child {
     width: 32px;
     line-height: 32px;
     font-size: 16px;
 }
-.table-action a.label{
-	margin-left: 5px
+
+/* Thêm margin cho label trong table-action */
+.table-action a.label {
+    margin-left: 5px;
 }
+
+/* Gradient background với fallback cho các trình duyệt cũ */
+.gradient-custom {
+    background: #fccb90; /* Fallback cho trình duyệt cũ */
+
+    /* Chrome 10-25, Safari 5.1-6 */
+    background: -webkit-linear-gradient(to bottom right, rgba(252, 203, 144, 1), rgba(213, 126, 235, 1));
+
+    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: linear-gradient(to bottom right, rgba(252, 203, 144, 1), rgba(213, 126, 235, 1));
+
+    height: 100vh; /* Đảm bảo phần tử chiếm toàn bộ chiều cao màn hình */
+    width: 100%; /* Chiếm toàn bộ chiều rộng màn hình */
+    position: relative; /* Đảm bảo các phần tử con không bị cản trở */
+    display: flex; /* Đảm bảo các phần tử con được căn chỉnh theo chiều dọc */
+    flex-direction: column;
+    overflow-y: auto; /* Cho phép cuộn theo chiều dọc */
+}
+
+/* Thêm padding cho các phần tử con của .gradient-custom để tránh bị mất gradient */
+.gradient-custom > * {
+    padding-bottom: 10px; /* Thêm padding phía dưới để tránh mất gradient */
+}
+
+/* Mask với backdrop filter */
+.mask-custom {
+    background: rgba(24, 24, 16, 0.2);
+    border-radius: 2em;
+    backdrop-filter: blur(15px);
+    border: 2px solid rgba(255, 255, 255, 0.05);
+    background-clip: padding-box;
+    box-shadow: 10px 10px 10px rgba(46, 54, 68, 0.03);
+}
+
+.chat-section {
+	display: none;
+}
+
+#room-message {
+    border: 1px solid rgb(219, 219, 219); /* Viền trắng */
+}
+
+/* Khi textarea có focus, giữ viền và nền không đổi màu */
+#room-message:focus {
+    outline: none; /* Xóa bỏ outline mặc định */
+    border: 1px solid  rgb(255, 208, 151); /* Viền trắng */
+}
+
+.deleteRoomMessage:hover {
+    cursor: pointer;
+}
+
+body {
+    overflow: hidden; 
+}
+
+.flex-shrink-0 {
+    width: 280px; /* Điều chỉnh chiều rộng của sidebar */
+    background-color: #f8f9fa; /* Màu nền sáng */
+    height: 100vh; /* Full chiều cao màn hình */
+    padding: 20px; /* Padding cho sidebar */
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1); /* Đổ bóng bên phải */
+  }
+
+  /* Căn giữa tên nhóm */
+  .flex-shrink-0 .fs-5 {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-weight: 600;
+    color: #333; /* Màu chữ */
+  }
+
+  /* Style cho phần tử danh sách */
+  .list-unstyled {
+    padding-left: 0;
+    margin: 0;
+  }
+
+  .btn-toggle {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    text-align: left;
+    font-size: 1rem;
+    border-radius: 5px;
+    color: #495057; /* Màu chữ */
+    background-color: #fff;
+    border: 1px solid #ddd;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-toggle:hover {
+    background-color: #f1f1f1; /* Màu nền khi hover */
+  }
+
+  .btn-toggle:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  /* Style cho các mục con trong danh sách collapse */
+  .btn-toggle-nav {
+    padding-left: 1.5rem; /* Thụt vào bên trái */
+  }
+
+  .btn-toggle-nav a {
+    display: block;
+    padding: 5px 0;
+    text-decoration: none;
+    color: #495057;
+    transition: color 0.2s ease;
+  }
+
+  .btn-toggle-nav a:hover {
+    color: #007bff; /* Màu chữ khi hover */
+  }
+
+  /* Tạo khoảng cách giữa các mục trong sidebar */
+  .mb-1 {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Thêm bóng cho sidebar khi ở chế độ thu gọn */
+  .btn-toggle-nav .link-body-emphasis {
+    font-weight: 500;
+    color: #212529;
+  }
+
+  /* Tạo hiệu ứng cho button collapse */
+  .collapse.show {
+    transition: height 0.35s ease;
+  }
+  
+
+

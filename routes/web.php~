@@ -8,8 +8,6 @@ use App\Http\Controllers\frontend\MessagePinnedApi;
 use App\Http\Controllers\frontend\UserProfileController;
 use App\Http\Controllers\frontend\VerificationController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\frontend\ProfileController;
-use App\Http\Controllers\frontend\ForgotPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,32 +27,6 @@ Route::get('/register', [CustomerController::class, 'register'])->name('register
 Route::post('/register', [CustomerController::class, 'postRegister']);
 Route::middleware(['auth', 'verified'])->get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
 Route::get('/email/verify/{id}', [VerificationController::class, 'verify'])->name('verification.verify');
-Route::get('/logout', [CustomerController::class, 'getLogout']) ->name('logout');
-Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
-Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
-Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
-Route::post('/reset-password/{token}', [ForgotPasswordController::class, 'reset'])->name('password.update');
-
-
-// home
-Route::get('/home', [HomeController::class, 'index'])->name('home');
-
-
-// profile frontend
-Route::middleware(['auth'])->group(function () {
-    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
-    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
-
-
-    // room routes
-   
-   
-});
-
-
-
-
-
 
 //route Room
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -67,13 +39,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/remove-member', [HomeController::class, 'removeMember'])->name('removeMember');
     Route::post('/upload', [HomeController::class, 'saveRoomChat'])->name('upload');
 
-    
+    // Pin message routes
+//    Route::post('/pin-message', [HomeController::class, 'pinMessage'])->name('pin.message');
+//    Route::post('/unpin-message', [HomeController::class, 'unPinMessage'])->name('unpin.message');
+//    Route::get('/get-pinned-messages', [HomeController::class, 'getPinnedMessages'])->name('get.pinned.messages');
+//    Route::post('/upload-file', [HomeController::class, 'uploadFile'])->name('upload.file');
+
     /* Pin message routes */
     Route::group(['prefix' => 'api'], function () {
-        Route::get('pin-message', [MessagePinnedApi::class, 'list'])->name('api.pin.message.list');
-        Route::post('pin-message', [MessagePinnedApi::class, 'pinned'])->name('api.pin.message.pinned');
-        Route::post('unpin-message', [MessagePinnedApi::class, 'unpin'])->name('api.pin.message.unpin');
-        Route::get('detail-pin-message', [MessagePinnedApi::class, 'detail'])->name('api.pin.message.detail');
+        Route::get('/pin-message', [MessagePinnedApi::class, 'list'])->name('api.pin.message.list');
+        Route::post('/pin-message', [MessagePinnedApi::class, 'pinned'])->name('api.pin.message.pinned');
+        Route::post('/unpin-message', [MessagePinnedApi::class, 'unpin'])->name('api.pin.message.unpin');
+        Route::get('/detail-pin-message', [MessagePinnedApi::class, 'detail'])->name('api.pin.message.detail');
     });
 });
 

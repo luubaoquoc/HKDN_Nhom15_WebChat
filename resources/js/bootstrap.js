@@ -37,3 +37,4 @@ window.Echo.connector.pusher.connection.bind('connected', () => {
 window.Echo.connector.pusher.connection.bind('error', (err) => {
     console.error('WebSocket error:', err);
 });
+

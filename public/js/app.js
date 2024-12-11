@@ -2162,7 +2162,29 @@ module.exports = {
   \*****************************/
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-__webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
+__webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js"); // Đảm bảo axios đã được cấu hình
+
+document.getElementById('uploadForm').addEventListener('submit', function (e) {
+  e.preventDefault(); // Ngừng submit form thông thường
+
+  // Tạo đối tượng FormData để gửi file và các dữ liệu khác
+  var formData = new FormData();
+  formData.append('file', document.getElementById('room-attachment').files[0]);
+  formData.append('room_id', 2); // Thay đổi thành room_id thực tế của bạn
+  formData.append('message', document.getElementById('room-message').value); // Nội dung tin nhắn
+
+  // Gửi yêu cầu AJAX để tải file lên
+  axios.post('/upload-file', formData) // Đảm bảo URL này đúng với route của bạn
+  .then(function (response) {
+    if (response.data.success) {
+      alert(response.data.message); // Thông báo tải lên thành công
+      document.getElementById('file-name').textContent = 'File đã được tải lên: ' + response.data.file_path;
+    }
+  })["catch"](function (error) {
+    alert('Có lỗi xảy ra!');
+    console.error(error);
+  });
+});
 
 /***/ }),
 

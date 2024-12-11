@@ -1,1 +1,1 @@
-require('./bootstrap');
+require('./bootstrap'); // Đảm bảo axios đã được cấu hình

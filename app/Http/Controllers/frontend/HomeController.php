@@ -13,6 +13,7 @@ use App\Models\Member;
 use App\Models\RoomChat;
 use App\Events\RoomMessageEvent;
 use App\Events\RoomMessageDeletedEvent;
+use App\Events\RoomCreated;
 
 class HomeController extends Controller
 {
@@ -39,6 +40,13 @@ class HomeController extends Controller
                 'name' => $request->input('name'),
                 'create_by' => auth()->id(),  
             ]);
+
+            $rooms = Room::where('create_by', auth()->user()->id)
+                    ->orWhereHas('users', function($query) {
+                        $query->where('user_id', auth()->user()->id);
+                    })
+                    ->get();
+            RoomCreated::dispatch($rooms);
     
             return response()->json([
                 'success' => 'Phòng đã được tạo thành công',
@@ -58,12 +66,11 @@ class HomeController extends Controller
 
             Member::create([
                 'room_id' => $request->room_id,
-                'user_id' => auth()->id(),  // Người tạo phòng
+                'user_id' => auth()->id(), 
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
 
-            // Tạo mảng dữ liệu để thêm thành viên mới
             foreach ($request->members as $user) {
                 Member::create([
                     'room_id' => $request->room_id,
@@ -72,6 +79,14 @@ class HomeController extends Controller
                     'updated_at' => now(),
                 ]);
             }
+            
+            $rooms = Room::where('create_by', auth()->user()->id)
+            ->orWhereHas('users', function($query) {
+                $query->where('user_id', auth()->user()->id);
+            })
+            ->get();
+            RoomCreated::dispatch($rooms);
+
             return response()->json(['msg' => 'Thêm thành viên thành công'], 200);
 
         } catch (\Exception $e) {
@@ -94,7 +109,7 @@ class HomeController extends Controller
             $chat= RoomChat::with('user')->where('id',$chat->id)->first();
 
             Log::info('Chat saved with ID: ' . $chat->id);
-            event(new RoomMessageEvent($chat));
+            RoomMessageEvent::dispatch($chat);
             Log::info('RoomMessageEvent fired for room: ' . $chat->room_id);
 
             return response()->json(['data' => $chat]);
@@ -123,7 +138,7 @@ class HomeController extends Controller
         try {
 
             RoomChat::where('id', $request->id)->delete();
-            event(new RoomMessageDeletedEvent($request->id));
+            RoomMessageDeletedEvent::dispatch($request->id);
             return response()->json(['success' => true]);
 
         } catch (\Exception $e) {

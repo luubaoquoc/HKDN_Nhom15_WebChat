@@ -328,9 +328,7 @@
     var user_id = @json(auth()->user()->id);
     var global_room_id;
   </script>
-
-  <script src="{{ asset('js/app.js') }}"></script>
-  <script src="{{ asset('assets/js/custom.js') }}"></script>
+  <script src="{{ mix('js/app.js') }}"></script>
   <!-- Custom scripts -->
   <script type="text/javascript"></script>
 </body>

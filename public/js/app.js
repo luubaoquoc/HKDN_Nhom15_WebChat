@@ -2163,6 +2163,269 @@ module.exports = {
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
+window.currentChannel = null;
+$(document).ready(function () {
+  //Roomchat stated
+  $('.room-list').click(function () {
+    var sidebar = document.getElementById('side-bar');
+    sidebar.style.display = 'block';
+    var roomId = $(this).attr('data-id');
+    global_room_id = roomId;
+    console.log("Selected Room ID:", global_room_id);
+    $('.chat-section').show();
+    Echo["private"]('broadcast-group-message.' + global_room_id).listen('.getRoomChatMessage', function (data) {
+      console.log('Message received:', data);
+      var formattedTime = dayjs(data.chat.created_at).format('HH:mm');
+      if (user_id != data.chat.user_id && global_room_id == data.chat.room_id) {
+        var html = "\n                    <li class=\"d-flex justify-content-between mb-4 distance-user-chat\" id=\"".concat(data.chat.id, "-chat\">\n                        <img src=\"https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp\" alt=\"avatar\" \n                            class=\"rounded-circle d-flex align-self-start me-3 shadow-1-strong\" width=\"60\">\n                        <div class=\"card mask-custom flex-grow-1\" style=\"min-width: 200px; max-width: 100%;\">\n                            <div class=\"card-header d-flex justify-content-between p-3\">\n                                <p class=\"fw-bold mb-0\">").concat(data.chat.user.name, "</p>\n                                <p class=\"text-light small mb-0\"><i class=\"far fa-clock me-2\"></i>").concat(formattedTime, "</p>\n                            </div>\n                            <div class=\"card-body d-flex justify-content-between align-items-center\">\n                                <p class=\"mb-0 text-wrap\">\n                                    ").concat(data.chat.content, "   \n                                </p>\n                                <i class=\"far fa-trash-alt deleteRoomMessage\" aria-hidden=\"true\" data-id = \"").concat(data.chat.id, "\" data-bs-toggle=\"modal\" data-bs-target=\"#roomdeleteChatModal\"></i>\n                            </div>\n                        </div>\n                    </li>");
+        $('#list-chatRoom').append(html);
+      }
+    }).error(function (err) {
+      console.error('Error while subscribing:', err);
+    });
+    loadRoomChats();
+    loadRoomMembers();
+  });
+  Echo["private"]('rooms-load').listen('.roomchatLoad', function (event) {
+    console.log('Message received:', event);
+    var html = '';
+    if (event.rooms && event.rooms.length > 0) {
+      event.rooms.forEach(function (room) {
+        html += "\n                    <li class=\"p-2 border-bottom room-list\" data-id=\"".concat(room.id, "\">\n                        <a href=\"#!\" class=\"d-flex justify-content-between link-light\">\n                            <div class=\"d-flex flex-row\">\n                                <img src=\"").concat(room.avatar, "\" alt=\"avatar\" class=\"rounded-circle d-flex align-self-center me-3 shadow-1-strong\" width=\"60\">\n                                <div class=\"pt-1\">\n                                    <p class=\"fw-bold mb-0\">").concat(room.name, "</p>\n                                    <p class=\"small text-white\">").concat(room.description, "</p>\n                                </div>\n                            </div>\n                            <div class=\"pt-1\">\n                                <p class=\"small text-white mb-1\">").concat(room.last_activity, "</p>\n                            </div>\n                        </a>\n                    </li>\n                ");
+      });
+      $('#room-list').append(html);
+    }
+  }).error(function (err) {
+    console.error('Error while subscribing:', err);
+  });
+
+  //Chat room script
+  $('#createRoomForm').submit(function (e) {
+    e.preventDefault();
+    var formData = $(this).serialize();
+    $.ajax({
+      url: '/create-room',
+      type: "POST",
+      data: formData,
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      success: function success(res) {
+        var createRoomModal = new bootstrap.Modal(document.getElementById('createRoomModal'));
+        createRoomModal.hide();
+
+        // Set the room ID in the hidden input field in the add member form
+        $('#room_id').val(res.room_id);
+        $('#addMemberModal').modal('show');
+
+        // Trigger the add member modal after the room is created
+      },
+      error: function error(xhr) {
+        var errorMessage = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
+        alert('Lỗi: \n' + errorMessage);
+      }
+    });
+  });
+  $('#addMemberForm').submit(function (e) {
+    e.preventDefault();
+    var formData = $(this).serialize();
+    $.ajax({
+      url: "/add-member",
+      type: "POST",
+      data: formData,
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      success: function success(res) {
+        $('#addMemberModal').modal('hide');
+        $('#addMemberForm')[0].reset();
+        alert(res.msg);
+      },
+      error: function error(xhr) {
+        var errorMessage = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
+        alert('Lỗi: \n' + errorMessage);
+      }
+    });
+  });
+  $('#room-chat-form').submit(function (e) {
+    e.preventDefault();
+    var message = $('#room-message').val();
+    $.ajax({
+      url: "/save-room-chat",
+      type: "POST",
+      data: {
+        room_id: global_room_id,
+        message: message
+      },
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      success: function success(res) {
+        console.log(res);
+        $('#room-message').val('');
+        var formattedTime = dayjs(res.data.created_at).format('HH:mm');
+        var html = "\n                    <li class=\"d-flex justify-content-between mb-4 current-user-chat\" id=\"".concat(res.data.id, "-chat\">\n                        <div class=\"card mask-custom w-100\">\n                        <div class=\"card-header d-flex justify-content-between p-3\"\n                            style=\"border-bottom: 1px solid rgba(255,255,255,.3);\">\n                            <p class=\"fw-bold mb-0\"> B\u1EA1n </p>\n                            <p class=\"text-light small mb-0\"><i class=\"far fa-clock me-2\"></i>").concat(formattedTime, "</p>\n                        </div>\n                        <div class=\"card-body d-flex justify-content-between align-items-center\">\n                            <p class=\"mb-0\">\n                                ").concat(res.data.content, "\n                            </p>\n                            <i class=\"far fa-trash-alt deleteRoomMessage\" aria-hidden=\"true\" data-id = \"").concat(res.data.id, "\" data-bs-toggle=\"modal\" data-bs-target=\"#roomdeleteChatModal\"></i>\n                        </div>\n                        </div>\n                        <img src=\"https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp\" alt=\"avatar\"\n                        class=\"rounded-circle d-flex align-self-start ms-3 shadow-1-strong\" width=\"60\">\n                    </li>                   \n                ");
+        $('#list-chatRoom').append(html);
+      },
+      error: function error(xhr) {
+        var errorMessage = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
+        alert('Lỗi: \n' + errorMessage);
+      }
+    });
+  });
+  function loadRoomChats() {
+    $('#list-chatRoom').html('');
+    $.ajax({
+      url: "load-room-chats",
+      type: "POST",
+      data: {
+        room_id: global_room_id
+      },
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      success: function success(res) {
+        console.log(res);
+        var chats = res.chats;
+        var html = '';
+        console.log(chats);
+        for (var i = 0; i < chats.length; i++) {
+          var formattedTime = dayjs(chats[i].user.created_at).format('HH:mm');
+          if (chats[i].user_id != user_id) {
+            html = "\n                            <li class=\"d-flex justify-content-between mb-4 distance-user-chat\" id=\"".concat(chats[i].id, "-chat\">\n                                <img src=\"https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp\" alt=\"avatar\" \n                                    class=\"rounded-circle d-flex align-self-start me-3 shadow-1-strong\" width=\"60\">\n                                <div class=\"card mask-custom flex-grow-1\" style=\"min-width: 200px; max-width: 100%;\">\n                                    <div class=\"card-header d-flex justify-content-between p-3\">\n                                        <p class=\"fw-bold mb-0\">").concat(chats[i].user.name, "</p>\n                                        <p class=\"text-light small mb-0\"><i class=\"far fa-clock me-2\"></i>").concat(formattedTime, "</p>\n                                    </div>\n                                    <div class=\"card-body d-flex justify-content-between align-items-center\">\n                                        <p class=\"mb-0 text-wrap\">\n                                            ").concat(chats[i].content, "        \n                                        </p>\n                                        <i class=\"far fa-trash-alt deleteRoomMessage\" aria-hidden=\"true\" data-id = \"").concat(chats[i].id, "\" data-bs-toggle=\"modal\" data-bs-target=\"#roomdeleteChatModal\"></i>\n                                    </div>\n                                </div>\n                            </li> ");
+            $('#list-chatRoom').append(html);
+          } else {
+            html = "\n                            <li class=\"d-flex justify-content-between mb-4 current-user-chat\" id=\"".concat(chats[i].id, "-chat\">\n                                <div class=\"card mask-custom w-100\">\n                                <div class=\"card-header d-flex justify-content-between p-3\"\n                                    style=\"border-bottom: 1px solid rgba(255,255,255,.3);\">\n                                    <p class=\"fw-bold mb-0\"> B\u1EA1n </p>\n                                    <p class=\"text-light small mb-0\"><i class=\"far fa-clock me-2\"></i>").concat(formattedTime, "</p>\n                                </div>\n                                <div class=\"card-body d-flex justify-content-between align-items-center\">\n                                    <p class=\"mb-0\">\n                                        ").concat(chats[i].content, "\n                                    </p>\n                                    <i class=\"far fa-trash-alt deleteRoomMessage\" aria-hidden=\"true\" data-id = \"").concat(chats[i].id, "\" data-bs-toggle=\"modal\" data-bs-target=\"#roomdeleteChatModal\"></i>                  \n                                </div>\n                                </div>\n                                <img src=\"https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp\" alt=\"avatar\"\n                                class=\"rounded-circle d-flex align-self-start ms-3 shadow-1-strong\" width=\"60\">\n                            </li>                   \n                        ");
+            $('#list-chatRoom').append(html);
+          }
+        }
+      },
+      error: function error(xhr) {
+        var errorMessage = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
+        alert('Lỗi: \n' + errorMessage);
+      }
+    });
+  }
+  $(document).on('click', '.deleteRoomMessage', function () {
+    var msg = $(this).parent().text();
+    $('#delete-room-message').text(msg);
+    $('#delete-room-message-id').val($(this).attr('data-id'));
+    Echo["private"]('room-message-deleted').listen('.roomchatDeleteMessage', function (data) {
+      console.log(data);
+      $('#' + data.id + '-chat').remove();
+    });
+  });
+  $('#delete-room-chat-form').submit(function (e) {
+    e.preventDefault();
+    var id = $('#delete-room-message-id').val();
+    $.ajax({
+      url: "/delete-room-chats",
+      type: "POST",
+      data: {
+        id: id
+      },
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      success: function success(res) {
+        $('#roomdeleteChatModal').modal('hide');
+        $('#' + id + '-chat').remove();
+      },
+      error: function error(xhr) {
+        var errorMessage = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
+        alert('Lỗi: \n' + errorMessage);
+      }
+    });
+  });
+  function loadRoomMembers() {
+    $.ajax({
+      url: 'room-members',
+      type: 'GET',
+      data: {
+        room_id: global_room_id
+      },
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      success: function success(res) {
+        console.log(res);
+        $('#members-list').html('');
+        if (res.roomsMember) {
+          var room = res.roomsMember;
+          var members = room.users;
+          var html = '';
+          $('#showRoomName').text(room.name);
+          for (var i = 0; i < members.length; i++) {
+            html += "\n                            <div class=\"d-flex justify-content-between align-items-center\" data-room-id=\"".concat(room.id, "\" data-member-id=\"").concat(members[i].id, "\">\n                                <span class=\"member-name\">").concat(members[i].name, "</span>\n                                <!-- D\u1EA5u ba ch\u1EA5m \u0111\u1EC3 m\u1EDF menu x\xF3a -->\n                                <button class=\"btn btn-link more-options\" data-id=\"").concat(members[i].id, "\">\n                                    <i class=\"fas fa-ellipsis-h\"></i>\n                                </button>\n                                <!-- Menu X\xF3a -->\n                                <div class=\"dropdown-menu\" aria-labelledby=\"moreOptionsMenu").concat(members[i].id, "\" id=\"moreOptionsMenu").concat(members[i].id, "\">\n                                    <button class=\"dropdown-item delete-member\" data-id=\"").concat(members[i].id, "\" data-bs-toggle=\"modal\" data-bs-target=\"#deleteMemberModal\">\n                                        X\xF3a\n                                    </button>\n                                </div>\n                            </div>\n\n                        ");
+          }
+          $('#members-list').append(html);
+        }
+      },
+      error: function error(xhr) {
+        var errorMessage = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
+        alert('Lỗi: \n' + errorMessage);
+      }
+    });
+  }
+  $(document).on('click', '.more-options', function () {
+    var memberId = $(this).data('id');
+    var menu = $('#moreOptionsMenu' + memberId);
+    menu.toggleClass('show');
+    $('.dropdown-menu').not(menu).removeClass('show');
+  });
+  $(document).on('click', '.delete-member', function () {
+    var memberId = $(this).data('id');
+    var roomId = $(this).closest('.d-flex').data('room-id');
+
+    // Nếu người dùng chọn xóa chính mình
+    if (memberId == user_id) {
+      if (confirm('Bạn có chắc chắn muốn rời khỏi phòng?')) {
+        $('#confirmDeleteMember').data('member-id', memberId);
+        $('#confirmDeleteMember').data('room-id', roomId);
+      } else {
+        return;
+      }
+    } else {
+      $('#confirmDeleteMember').data('member-id', memberId);
+      $('#confirmDeleteMember').data('room-id', roomId);
+    }
+  });
+  $(document).on('click', '#confirmDeleteMember', function () {
+    var memberId = $(this).data('member-id');
+    var roomId = $(this).data('room-id');
+    console.log('Room ID:', roomId);
+    console.log('Member ID:', memberId);
+    $.ajax({
+      url: '/remove-member',
+      type: 'POST',
+      data: {
+        room_id: roomId,
+        user_id: memberId
+      },
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
+      success: function success(res) {
+        if (res.success) {
+          alert('Xóa thành viên thành công');
+          if (memberId == user_id) {
+            console.log('Phần tử nhóm cần xóa:', $('div[data-id="' + roomId + '"]'));
+            $('li[data-id="' + roomId + '"]').remove();
+            alert('Bạn đã rời khỏi nhóm này');
+          } else {
+            $('[data-room-id="' + roomId + '"][data-member-id="' + memberId + '"]').remove();
+          }
+          $('#deleteMemberModal').modal('hide');
+        } else {
+          alert('Có lỗi xảy ra, vui lòng thử lại!');
+        }
+      },
+      error: function error(xhr) {
+        alert('Lỗi: ' + xhr.responseText);
+      }
+    });
+  });
+});
 
 /***/ }),
 
@@ -2175,6 +2438,10 @@ __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var laravel_echo__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! laravel-echo */ "./node_modules/laravel-echo/dist/echo.js");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 window._ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 
 /**
@@ -2195,15 +2462,14 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 
 window.Pusher = __webpack_require__(/*! pusher-js */ "./node_modules/pusher-js/dist/web/pusher.js");
-window.Echo = new laravel_echo__WEBPACK_IMPORTED_MODULE_0__["default"]({
+window.Echo = new laravel_echo__WEBPACK_IMPORTED_MODULE_0__["default"](_defineProperty(_defineProperty(_defineProperty({
   broadcaster: 'pusher',
-  key: 'your_app_key',
+  key: "9a946be8180fbe089741",
+  cluster: "ap1",
+  forceTLS: true,
   wsHost: window.location.hostname,
-  wsPort: 6001,
-  forceTLS: false,
-  disableStats: true,
-  enabledTransports: ['ws', 'wss']
-});
+  wsPort: 6001
+}, "forceTLS", false), "disableStats", false), "encrypted", true));
 window.Echo.connector.pusher.connection.bind('connected', function () {
   console.log('WebSocket connected');
 });

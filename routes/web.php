@@ -9,6 +9,7 @@ use App\Http\Controllers\frontend\UserProfileController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Middleware\HandleRoleAdmin;
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes

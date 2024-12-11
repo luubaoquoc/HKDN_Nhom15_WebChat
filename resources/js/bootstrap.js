@@ -22,12 +22,14 @@ window.Pusher = require('pusher-js');
 
 window.Echo = new Echo({
     broadcaster: 'pusher',
-    key: 'your_app_key',
+    key: process.env.MIX_PUSHER_APP_KEY,  
+    cluster: process.env.MIX_PUSHER_APP_CLUSTER, 
+    forceTLS: true,
     wsHost: window.location.hostname,
     wsPort: 6001,
     forceTLS: false,
-    disableStats: true,
-    enabledTransports: ['ws', 'wss']
+    disableStats: false,
+    encrypted: true,
 });
 
 window.Echo.connector.pusher.connection.bind('connected', () => {
@@ -37,3 +39,4 @@ window.Echo.connector.pusher.connection.bind('connected', () => {
 window.Echo.connector.pusher.connection.bind('error', (err) => {
     console.error('WebSocket error:', err);
 });
+

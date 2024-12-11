@@ -253,19 +253,16 @@
                             </ul>
                         </div>
                         <div class="form-outline form-white">
-                            <form id="room-chat-form" enctype="multipart/form-data">
+                            <form id="room-chat-form" enctype="multipart/form-data" method="POST">
                                 @csrf
                                 <div class="input-group">
                                     <input type="file" id="file-upload" name="file" style="display: none" accept="*/*">
-                                    <span class="input-group-text text-white border" id="upload-trigger"
-                                          style="cursor: pointer;">
-                                      <i class="fas fa-paperclip"></i>
-                                  </span>
-                                    <input name="message" id="room-message" class="form-control" placeholder="Tin nhắn"
-                                           rows="4">
+                                    <span class="input-group-text text-white border" id="upload-trigger" style="cursor: pointer;">
+                                        <i class="fas fa-paperclip"></i>
+                                    </span>
+                                    <input name="message" id="room-message" class="form-control" placeholder="Tin nhắn" rows="4">
                                     <button type="submit" class="btn btn-light float-end">
-                                        <i class="fas fa-paper-plane"
-                                           style="color: transparent; background: linear-gradient(to bottom right, rgba(252, 203, 144, 1), rgba(213, 126, 235, 1)); -webkit-background-clip: text;"></i>
+                                        <i class="fas fa-paper-plane" style="color: transparent; background: linear-gradient(to bottom right, rgba(252, 203, 144, 1), rgba(213, 126, 235, 1)); -webkit-background-clip: text;"></i>
                                     </button>
                                 </div>
                             </form>
@@ -610,6 +607,7 @@
     const $list_pinned_messages = '{{ route('api.pin.message.list') }}';
     const $api_pinned_messages = '{{ route('api.pin.message.pinned') }}';
     const $unpin_messages = '{{ route('api.pin.message.unpin') }}';
+
 </script>
 <script src="{{ mix('js/app.js') }}"></script>
 <!-- Custom scripts -->

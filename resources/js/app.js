@@ -138,30 +138,28 @@ $(document).ready(function(){
     })
 
     $('#room-chat-form').submit(function (e) {
-        e.preventDefault()
-
-        var message = $('#room-message').val()
-
+        e.preventDefault();
+    
+        var message = $('#room-message').val();
+    
+        // Kiểm tra giá trị của message trước khi gửi
+        console.log("Message being sent:", message);
+    
+        if (!message || message.trim() === '') {
+            console.error("Message is empty or undefined!");
+            return; // Nếu message rỗng hoặc undefined, không gửi
+        }
+    
         $.ajax({
             url: "/save-room-chat",
             type: "POST",
             data: (() => {
                 const formData = new FormData();
-
-                // Log initial values
-                console.log('Initial values:', {
-                    room_id: global_room_id,
-                    message: message,
-                });
-
+    
                 formData.append('room_id', global_room_id);
-
-                // Only append message if not empty
-                if (message && message.trim() !== '') {
-                    formData.append('message', message);
-                }
-
-                // Handle file upload
+                formData.append('message', message); // Gửi message đã kiểm tra
+    
+                // Handle file upload nếu có
                 const fileInput = $('#file-upload')[0];
                 if (fileInput && fileInput.files && fileInput.files[0]) {
                     console.log('File details:', {
@@ -171,79 +169,30 @@ $(document).ready(function(){
                     });
                     formData.append('file', fileInput.files[0]);
                 }
-
-                // Log final FormData contents
-                console.log('=== FormData Contents ===');
-                for (let pair of formData.entries()) {
-                    console.log(`${pair[0]}: `, pair[1] instanceof File ?
-                        `File: ${pair[1].name} (${pair[1].type})` :
-                        pair[1]
-                    );
-                }
-
+    
                 return formData;
             })(),
             processData: false,
             contentType: false,
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                // 'Content-Type': 'multipart/form-data'
-
             },
             success: function (res) {
-                console.log(res)
+                console.log("Response data:", res);  // Log toàn bộ dữ liệu trả về từ server
                 // Clear form inputs after successful submission
-                $('#room-message').val('')
-                $('#file-upload').val('')
+                $('#room-message').val('');
+                $('#file-upload').val('');
                 // Clear any preview image if it exists
-                $('.preview-image').remove()
-
-                const formattedTime = dayjs(res.data.created_at).format('HH:mm');
-
-                let image = null;
-                let content = res.data.content
-                if (res.file_type === 'image') {
-                    image = `<img src="${res.data.file_url}" class="img-fluid">`;
-                } else if (res.file_type === 'document') {
-                    image = `<a href="${res.data.file_url}" target="_blank">${res.data.content}</a>`;
-                }
-
-                let html = `
-                    <li class="d-flex justify-content-between mb-4 current-user-chat" id="${res.data.id}-chat">
-                        <div class="card mask-custom w-100">
-                        <div class="card-header d-flex justify-content-between p-3"
-style="border-bottom: 1px solid rgba(255,255,255,.3);">
-                            <p class="fw-bold mb-0">${res.data.user.name}</p>
-                            <p class="text-light small mb-0"><i class="far fa-clock me-2"></i>${formattedTime}</p>
-                        </div>
-                        <div class="card-body d-flex justify-content-between align-items-center gap-2">
-                            <div class="mb-0">
-                            <div class="mb-0">
-                                ${image ? image : ''}
-                            </div>
-                            <div class="mb-0">
-                                ${content}
-                            </div>
-                                </div>
-                            <div>
-                                <i class="fas fa-thumbtack me-2 pinMessage" aria-hidden="true" data-id="${res.data.id}" data-pinned="false"></i>
-                                <i class="far fa-trash-alt deleteRoomMessage" aria-hidden="true" data-id="${res.data.id}" data-bs-toggle="modal" data-bs-target="#roomdeleteChatModal"></i>
-                            </div>
-                        </div>
-                        </div>
-                        <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp" alt="avatar"
-                        class="rounded-circle d-flex align-self-start ms-3 shadow-1-strong" width="60">
-                    </li>
-                `
-
-                $('#list-chatRoom').append(html)
+                $('.preview-image').remove();
             },
             error: function (xhr) {
                 var errorMessage = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
-                alert('Lỗi: \n' + errorMessage)
+                alert('Lỗi: \n' + errorMessage);
             }
-        })
-    })     
+        });
+    });
+    
+        
     
     function loadRoomChats(){
         $('#list-chatRoom').html('')

@@ -261,8 +261,9 @@
                                           style="cursor: pointer;">
                                       <i class="fas fa-paperclip"></i>
                                   </span>
-                                    <input name="message" id="room-message" class="form-control" placeholder="Tin nhắn"
-                                           rows="4">
+                                    <textarea name="message" id="room-message" class="form-control"
+                                              placeholder="Tin nhắn"
+                                              rows="4"></textarea>
                                     <button type="submit" class="btn btn-light float-end">
                                         <i class="fas fa-paper-plane"
                                            style="color: transparent; background: linear-gradient(to bottom right, rgba(252, 203, 144, 1), rgba(213, 126, 235, 1)); -webkit-background-clip: text;"></i>

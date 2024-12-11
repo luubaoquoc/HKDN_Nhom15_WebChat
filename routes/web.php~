@@ -47,10 +47,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /* Pin message routes */
     Route::group(['prefix' => 'api'], function () {
-        Route::get('pin-message', [MessagePinnedApi::class, 'list'])->name('api.pin.message.list');
-        Route::post('pin-message', [MessagePinnedApi::class, 'pinned'])->name('api.pin.message.pinned');
-        Route::post('unpin-message', [MessagePinnedApi::class, 'unpin'])->name('api.pin.message.unpin');
-        Route::get('detail-pin-message', [MessagePinnedApi::class, 'detail'])->name('api.pin.message.detail');
+        Route::get('/pin-message', [MessagePinnedApi::class, 'list'])->name('api.pin.message.list');
+        Route::post('/pin-message', [MessagePinnedApi::class, 'pinned'])->name('api.pin.message.pinned');
+        Route::post('/unpin-message', [MessagePinnedApi::class, 'unpin'])->name('api.pin.message.unpin');
+        Route::get('/detail-pin-message', [MessagePinnedApi::class, 'detail'])->name('api.pin.message.detail');
     });
 });
 

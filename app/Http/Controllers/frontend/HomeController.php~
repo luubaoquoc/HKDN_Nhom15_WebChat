@@ -79,7 +79,6 @@ class HomeController extends Controller
         }
     }
 
-    
     public function loadRoomChats(Request $request){
         try {
             $chats = RoomChat::with('user')
@@ -247,7 +246,6 @@ class HomeController extends Controller
 //            $chat->load('user');
 //
 //            DB::commit();
-            DB::beginTransaction();
 
             $room_id = $request->input('room_id');
             $message = $request->input('message');
@@ -269,9 +267,6 @@ class HomeController extends Controller
                 'file_url' => $file_url,
             ]);
 
-            $chat->load('user');
-
-            DB::commit();
             // Gửi sự kiện đến các client
             event(new RoomMessageEvent($chat));
 

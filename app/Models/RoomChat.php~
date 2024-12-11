@@ -13,7 +13,6 @@ class RoomChat extends Model
     protected $fillable = [
         'user_id',
         'room_id',
-        'file_url',
         'content'
     ];
 

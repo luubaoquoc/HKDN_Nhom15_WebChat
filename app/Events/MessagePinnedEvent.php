@@ -22,12 +22,12 @@ class MessagePinnedEvent implements ShouldBroadcast
      * Create a new event instance.
      *
      * @param RoomChat $message
-     * @param bool $pinned
+     * @param bool|null $pinned
      */
-    public function __construct(RoomChat $message, bool $pinned)
+    public function __construct(RoomChat $message, ?bool $pinned = false)
     {
         $this->message = $message;
-        $this->pinned = $pinned;
+        $this->pinned = $pinned ?? false;
     }
 
     /**
@@ -48,5 +48,18 @@ class MessagePinnedEvent implements ShouldBroadcast
     public function broadcastAs()
     {
         return 'message.pinned';
+    }
+
+    /**
+     * Get the data to broadcast.
+     *
+     * @return array
+     */
+    public function broadcastWith()
+    {
+        return [
+            'message' => $this->message->load('user'),
+            'pinned' => $this->pinned
+        ];
     }
 }

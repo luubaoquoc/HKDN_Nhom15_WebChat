@@ -1,24 +1,24 @@
 window.currentChannel = null;
 
-$(document).ready(function(){
+$(document).ready(function () {
     //Roomchat stated
-        $('.room-list').click(function () {
+    $('.room-list').click(function () {
 
         const sidebar = document.getElementById('side-bar');
-        sidebar.style.display = 'block'; 
+        sidebar.style.display = 'block';
 
         var roomId = $(this).attr('data-id')
-        global_room_id = roomId; 
+        global_room_id = roomId;
         console.log("Selected Room ID:", global_room_id)
         $('.chat-section').show();
 
         Echo.private('broadcast-group-message.' + global_room_id)
-        .listen('getRoomChatMessage', (data) => {   
-            console.log('Message received:', data);
+            .listen('getRoomChatMessage', (data) => {
+                console.log('Message received:', data);
 
-            if (user_id != data.chat.user_id && global_room_id == data.chat.room_id) {
-                
-                let html = `
+                if (user_id != data.chat.user_id && global_room_id == data.chat.room_id) {
+
+                    let html = `
                     <li class="d-flex justify-content-between mb-4 distance-user-chat" id="${data.chat.id}-chat">
                         <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp" alt="avatar"
                             class="rounded-circle d-flex align-self-start me-3 shadow-1-strong" width="60">
@@ -35,11 +35,11 @@ $(document).ready(function(){
                     </li>`;
 
                     $('#list-chatRoom').append(html);
-            }
-        })
-        .error((err) => {
-            console.error('Error while subscribing:', err);
-        });
+                }
+            })
+            .error((err) => {
+                console.error('Error while subscribing:', err);
+            });
 
         loadRoomChats()
         loadRoomMembers()
@@ -48,7 +48,7 @@ $(document).ready(function(){
     });
 
     //Chat room script
-    $('#createRoomForm').submit(function(e) {
+    $('#createRoomForm').submit(function (e) {
         e.preventDefault();
 
         var formData = $(this).serialize();
@@ -60,7 +60,7 @@ $(document).ready(function(){
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
-            success: function(res) {
+            success: function (res) {
                 var createRoomModal = new bootstrap.Modal(document.getElementById('createRoomModal'));
                 createRoomModal.hide();
 
@@ -71,62 +71,62 @@ $(document).ready(function(){
 
                 // Trigger the add member modal after the room is created
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 var errorMessage = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
                 alert('Lỗi: \n' + errorMessage);
             }
         });
     });
-    
 
-    $('#addMemberForm').submit(function(e){
+
+    $('#addMemberForm').submit(function (e) {
         e.preventDefault()
 
         var formData = $(this).serialize()
 
         $.ajax({
-            url:"/add-member",
+            url: "/add-member",
             type: "POST",
             data: formData,
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
-            success: function(res) {
+            success: function (res) {
                 $('#addMemberModal').modal('hide')
                 $('#addMemberForm')[0].reset()
                 alert(res.msg)
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 var errorMessage = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
                 alert('Lỗi: \n' + errorMessage)
             }
         })
     })
 
-    $('#room-chat-form').submit(function(e){
+    $('#room-chat-form').submit(function (e) {
         e.preventDefault()
 
         var message = $('#room-message').val()
 
         $.ajax({
-            url:"/save-room-chat",
-            type:"POST",
+            url: "/save-room-chat",
+            type: "POST",
             data: (() => {
                 const formData = new FormData();
-                
+
                 // Log initial values
                 console.log('Initial values:', {
                     room_id: global_room_id,
                     message: message,
                 });
-                
+
                 formData.append('room_id', global_room_id);
-                
+
                 // Only append message if not empty
                 if (message && message.trim() !== '') {
                     formData.append('message', message);
                 }
-                
+
                 // Handle file upload
                 const fileInput = $('#file-upload')[0];
                 if (fileInput && fileInput.files && fileInput.files[0]) {
@@ -137,16 +137,16 @@ $(document).ready(function(){
                     });
                     formData.append('file', fileInput.files[0]);
                 }
-                
+
                 // Log final FormData contents
                 console.log('=== FormData Contents ===');
                 for (let pair of formData.entries()) {
-                    console.log(`${pair[0]}: `, pair[1] instanceof File ? 
-                        `File: ${pair[1].name} (${pair[1].type})` : 
+                    console.log(`${pair[0]}: `, pair[1] instanceof File ?
+                        `File: ${pair[1].name} (${pair[1].type})` :
                         pair[1]
                     );
                 }
-                
+
                 return formData;
             })(),
             processData: false,
@@ -154,23 +154,24 @@ $(document).ready(function(){
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
                 // 'Content-Type': 'multipart/form-data'
-                
+
             },
-            success: function(res){
+            success: function (res) {
                 console.log(res)
                 // Clear form inputs after successful submission
                 $('#room-message').val('')
                 $('#file-upload').val('')
                 // Clear any preview image if it exists
                 $('.preview-image').remove()
-                
+
                 const formattedTime = dayjs(res.data.created_at).format('HH:mm');
 
-                let messageContent = res.data.content;
+                let image = null;
+                let content = res.data.content
                 if (res.file_type === 'image') {
-                    messageContent = `<img src="${res.data.file_url}" class="img-fluid" style="width: 200px; height: 200px; object-fit: cover;">`;
+                    image = `<img src="${res.data.file_url}" class="img-fluid">`;
                 } else if (res.file_type === 'document') {
-                    messageContent = `<a href="${res.data.file_url}" target="_blank">${res.data.content}</a>`;
+                    image = `<a href="${res.data.file_url}" target="_blank">${res.data.content}</a>`;
                 }
 
                 let html = `
@@ -181,10 +182,15 @@ $(document).ready(function(){
                             <p class="fw-bold mb-0">${res.data.user.name}</p>
                             <p class="text-light small mb-0"><i class="far fa-clock me-2"></i>${formattedTime}</p>
                         </div>
-                        <div class="card-body d-flex justify-content-between align-items-center">
-                            <p class="mb-0">
-                                ${messageContent}
-                            </p>
+                        <div class="card-body d-flex justify-content-between align-items-center gap-2">
+                            <div class="mb-0">
+                            <div class="mb-0">
+                                ${image ? image : ''}
+                            </div>
+                            <div class="mb-0">
+                                ${content}
+                            </div>
+                                </div>
                             <div>
                                 <i class="fas fa-thumbtack me-2 pinMessage" aria-hidden="true" data-id="${res.data.id}" data-pinned="false"></i>
                                 <i class="far fa-trash-alt deleteRoomMessage" aria-hidden="true" data-id="${res.data.id}" data-bs-toggle="modal" data-bs-target="#roomdeleteChatModal"></i>
@@ -193,27 +199,27 @@ $(document).ready(function(){
                         </div>
                         <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp" alt="avatar"
                         class="rounded-circle d-flex align-self-start ms-3 shadow-1-strong" width="60">
-                    </li>                   
+                    </li>
                 `
 
                 $('#list-chatRoom').append(html)
             },
-            error: function(xhr) {
-                var errorMessa  ge = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
+            error: function (xhr) {
+                var errorMessage = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
                 alert('Lỗi: \n' + errorMessage)
             }
         })
-    })       
+    })
 
     function loadRooms() {
         $.ajax({
             url: '/get-rooms',  // Đảm bảo API này trả về danh sách nhóm hiện tại của người dùng
             type: 'GET',
-            success: function(res) {
+            success: function (res) {
                 $('#room-list').html('');  // Xóa danh sách nhóm cũ
                 if (res.rooms && res.rooms.length > 0) {
                     let html = '';
-                    res.rooms.forEach(function(room) {
+                    res.rooms.forEach(function (room) {
                         html += `
                             <li class="p-2 border-bottom room-list" data-id="${room.id}">
                                 <a href="#!" class="d-flex justify-content-between link-light">
@@ -234,37 +240,47 @@ $(document).ready(function(){
                     $('#room-list').append(html);
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 alert('Lỗi khi tải danh sách nhóm: ' + xhr.responseText);
             }
         });
     }
-    
 
-    function loadRoomChats(){
+
+    function loadRoomChats() {
         $('#list-chatRoom').html('')
 
         $.ajax({
             url: "load-room-chats",
-            type:"POST",
+            type: "POST",
             data: {
                 room_id: global_room_id,
             },
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
-            success: function(res){
+            success: function (res) {
                 console.log(res)
 
                 let chats = res.chats;
-                let html = ''; 
+                let html = '';
                 console.log(chats)
-                for(let i = 0; i< chats.length; i++){
+                for (let i = 0; i < chats.length; i++) {
                     const formattedTime = dayjs(chats[i].user.created_at).format('HH:mm');
-                    if(chats[i].user_id != user_id){
+
+                    let image = null;
+                    let check = isImageFile(chats[i].file_url);
+
+                    if (check) {
+                        image = `<img src="${chats[i].file_url}" class="img-fluid">`;
+                    } else if (chats[i].file_url && !check) {
+                        image = `<a href="${chats[i].file_url}" target="_blank">${res.data.content}</a>`;
+                    }
+
+                    if (chats[i].user_id != user_id) {
                         html = `
                             <li class="d-flex justify-content-between mb-4 distance-user-chat" id="${chats[i].id}-chat">
-                                <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp" alt="avatar" 
+                                <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp" alt="avatar"
                                     class="rounded-circle d-flex align-self-start me-3 shadow-1-strong" width="60">
                                 <div class="card mask-custom flex-grow-1" style="min-width: 200px; max-width: 100%;">
                                     <div class="card-header d-flex justify-content-between p-3">
@@ -272,20 +288,25 @@ $(document).ready(function(){
                                         <p class="text-light small mb-0"><i class="far fa-clock me-2"></i>${formattedTime}</p>
                                     </div>
                                     <div class="card-body d-flex justify-content-between align-items-center">
-                                        <p class="mb-0 text-wrap">
-                                            ${chats[i].content}        
-                                        </p>
+
+                                         <div class="mb-0">
+                            <div class="mb-0">
+                                ${chats[i].file_url ? image : ''}
+                            </div>
+                            <div class="mb-0 text-wrap">
+                                 ${chats[i].content}
+                            </div>
+                                </div>
                                         <div>
-                                            <i class="fas fa-thumbtack me-2 pinMessage ${chats[i].pinned ? 'text-warning' : ''}" aria-hidden="true" data-id="${chats[i].id}" data-pinned="${chats[i].pinned}"></i>
+                                            <i class="fas fa-thumbtack me-2 pinMessage ${chats[i].is_pinned ? 'text-warning' : ''}" aria-hidden="true" data-id="${chats[i].id}" data-pinned="${chats[i].pinned}"></i>
                                             <i class="far fa-trash-alt deleteRoomMessage" aria-hidden="true" data-id="${chats[i].id}" data-bs-toggle="modal" data-bs-target="#roomdeleteChatModal"></i>
                                         </div>
                                     </div>
                                 </div>
                             </li> `
 
-                            $('#list-chatRoom').append(html);
-                    }   
-                    else{
+                        $('#list-chatRoom').append(html);
+                    } else {
                         html = `
                             <li class="d-flex justify-content-between mb-4 current-user-chat" id="${chats[i].id}-chat">
                                 <div class="card mask-custom w-100">
@@ -295,60 +316,74 @@ $(document).ready(function(){
                                     <p class="text-light small mb-0"><i class="far fa-clock me-2"></i>${formattedTime}</p>
                                 </div>
                                 <div class="card-body d-flex justify-content-between align-items-center">
-                                    <p class="mb-0">
-                                        ${chats[i].content}
-                                    </p>
+                                     <div class="mb-0">
+                            <div class="mb-0">
+                                 ${chats[i].file_url ? image : ''}
+                            </div>
+                            <div class="mb-0 text-wrap">
+                                 ${chats[i].content}
+                            </div>
+                                </div>
                                     <div>
-                                        <i class="fas fa-thumbtack me-2 pinMessage ${chats[i].pinned ? 'text-warning' : ''}" aria-hidden="true" data-id="${chats[i].id}" data-pinned="${chats[i].pinned}"></i>
+                                        <i class="fas fa-thumbtack me-2 pinMessage ${chats[i].is_pinned ? 'text-warning' : ''}" aria-hidden="true" data-id="${chats[i].id}" data-pinned="${chats[i].pinned}"></i>
                                         <i class="far fa-trash-alt deleteRoomMessage" aria-hidden="true" data-id="${chats[i].id}" data-bs-toggle="modal" data-bs-target="#roomdeleteChatModal"></i>
-                                    </div>                  
+                                    </div>
                                 </div>
                                 </div>
                                 <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp" alt="avatar"
                                 class="rounded-circle d-flex align-self-start ms-3 shadow-1-strong" width="60">
-                            </li>                   
-                        ` 
+                            </li>
+                        `
                         $('#list-chatRoom').append(html);
                     }
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 var errorMessage = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
                 alert('Lỗi: \n' + errorMessage)
             }
         })
     }
 
-    $(document).on('click','.deleteRoomMessage', function(){
+    function isImageFile(url) {
+        if (url) {
+            const extension = url.split('.').pop().toLowerCase();
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
+            return imageExtensions.includes(extension);
+        }
+        return false;
+    }
+
+    $(document).on('click', '.deleteRoomMessage', function () {
         let msg = $(this).parent().text()
         $('#delete-room-message').text(msg)
 
         $('#delete-room-message-id').val($(this).attr('data-id'))
 
         Echo.private('room-message-deleted')
-        .listen('RoomMessageDeletedEvent', (data) => {   
-            console.log(data);
-            $('#'+data.id+'-chat').remove()
-        })
+            .listen('RoomMessageDeletedEvent', (data) => {
+                console.log(data);
+                $('#' + data.id + '-chat').remove()
+            })
     })
 
-    $('#delete-room-chat-form').submit(function(e){
+    $('#delete-room-chat-form').submit(function (e) {
         e.preventDefault()
         var id = $('#delete-room-message-id').val()
 
         $.ajax({
-            url:"/delete-room-chats",
-            type:"POST",
-            data: {id:id},
+            url: "/delete-room-chats",
+            type: "POST",
+            data: {id: id},
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
-            success: function(res){
+            success: function (res) {
                 $('#roomdeleteChatModal').modal('hide');
 
-                $('#'+id+'-chat').remove()
+                $('#' + id + '-chat').remove()
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 var errorMessage = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
                 alert('Lỗi: \n' + errorMessage)
             }
@@ -357,24 +392,24 @@ $(document).ready(function(){
 
     function loadRoomMembers() {
         $.ajax({
-            url: 'room-members',  
-            type: 'GET', 
+            url: 'room-members',
+            type: 'GET',
             data: {
-                room_id: global_room_id 
+                room_id: global_room_id
             },
             headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') 
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
-            success: function(res) {
+            success: function (res) {
                 console.log(res)
-                $('#members-list').html(''); 
+                $('#members-list').html('');
                 if (res.roomsMember) {
                     let room = res.roomsMember;
                     let members = room.users;
                     let html = '';
 
                     $('#showRoomName').text(room.name);
-    
+
                     for (let i = 0; i < members.length; i++) {
                         html += `
                             <div class="d-flex justify-content-between align-items-center" data-room-id="${room.id}" data-member-id="${members[i].id}">
@@ -396,24 +431,24 @@ $(document).ready(function(){
                     $('#members-list').append(html);
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 var errorMessage = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
                 alert('Lỗi: \n' + errorMessage);
             }
         });
     }
 
-    $(document).on('click', '.more-options', function() {
+    $(document).on('click', '.more-options', function () {
         var memberId = $(this).data('id');
         var menu = $('#moreOptionsMenu' + memberId);
-        menu.toggleClass('show'); 
+        menu.toggleClass('show');
         $('.dropdown-menu').not(menu).removeClass('show');
     });
 
-    $(document).on('click', '.delete-member', function() {
+    $(document).on('click', '.delete-member', function () {
         var memberId = $(this).data('id');
         var roomId = $(this).closest('.d-flex').data('room-id');
-    
+
         // Nếu người dùng chọn xóa chính mình
         if (memberId == user_id) {
             if (confirm('Bạn có chắc chắn muốn rời khỏi phòng?')) {
@@ -428,14 +463,14 @@ $(document).ready(function(){
         }
     });
 
-    $(document).on('click', '#confirmDeleteMember', function() {
+    $(document).on('click', '#confirmDeleteMember', function () {
         var memberId = $(this).data('member-id');
         var roomId = $(this).data('room-id');
-        
 
-        console.log('Room ID:', roomId);  
-        console.log('Member ID:', memberId); 
-    
+
+        console.log('Room ID:', roomId);
+        console.log('Member ID:', memberId);
+
         $.ajax({
             url: '/remove-member',
             type: 'POST',
@@ -446,57 +481,56 @@ $(document).ready(function(){
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
-            success: function(res) {
+            success: function (res) {
                 if (res.success) {
                     alert('Xóa thành viên thành công');
-    
+
                     if (memberId == user_id) {
                         console.log('Phần tử nhóm cần xóa:', $('div[data-id="' + roomId + '"]'));  // Kiểm tra xem phần tử có được chọn đúng không
-                        $('li[data-id="' + roomId + '"]').remove(); 
+                        $('li[data-id="' + roomId + '"]').remove();
                         alert('Bạn đã rời khỏi nhóm này');
                     } else {
                         $('[data-room-id="' + roomId + '"][data-member-id="' + memberId + '"]').remove();
                     }
-    
-                    $('#deleteMemberModal').modal('hide'); 
+
+                    $('#deleteMemberModal').modal('hide');
 
                     loadRooms();
-    
+
                 } else {
                     alert('Có lỗi xảy ra, vui lòng thử lại!');
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 alert('Lỗi: ' + xhr.responseText);
             }
         });
-    }); 
+    });
 
     // Thêm sự kiện click cho nút pin
-    $(document).on('click', '.pinMessage', function() {
-        var messageId = $(this).data('id');
-        var isPinned = $(this).data('pinned');
+    $(document).on('click', '.pinMessage', function () {
+        let messageId = $(this).data('id');
         var $icon = $(this);
-        
+
         $.ajax({
-            url: '/pin-message',
+            url: '/api/pin-message',
             type: 'POST',
             data: {
-                message_id: messageId,
-                pinned: !isPinned,
-                room_id: global_room_id
+                message_id: messageId, // ID của tin nhắn
+                room_id: global_room_id, // ID của room
+                user_id: user_id,
             },
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(res) {
-                if (res.success) {
-                    $icon.data('pinned', !isPinned);
-                    $icon.toggleClass('text-warning');
-                    loadPinnedMessages(); // Tải lại danh sách tin nhắn đã ghim
+
+            success: function (res) {
+                console.log(res);
+                $icon.toggleClass('text-warning');
+                if (res.type == 'success') {
+                    $(this).toggleClass('text-warning');
+                    alert(res.message);
+                    loadPinnedMessages();
                 }
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 alert('Lỗi: ' + xhr.responseText);
             }
         });
@@ -505,42 +539,39 @@ $(document).ready(function(){
     // Thêm hàm load tin nhắn đã ghim
     function loadPinnedMessages() {
         $.ajax({
-            url: '/get-pinned-messages',
+            url: '/api/pin-message?room_id=' + global_room_id,
             type: 'GET',
-            data: {
-                room_id: global_room_id
-            },
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(res) {
-                $('#pinned-messages').html('');
-                if (res.pinnedMessages && res.pinnedMessages.length > 0) {
-                    res.pinnedMessages.forEach(function(message) {
-                        const formattedTime = dayjs(message.created_at).format('HH:mm');
+            success: function (res) {
+                let html = '';
+                if (res.data && res.data.length > 0) {
+                    res.data.forEach(function (item) {
+                        const formattedTime = dayjs(item.message.created_at).format('HH:mm');
                         let pinnedHtml = `
-                            <div class="pinned-message" id="pinned-${message.id}">
+                            <div class="pinned-message" id="pinned-${item.message.id}">
                                 <div class="card mask-custom">
                                     <div class="card-header">
-                                        <strong>${message.user.name}</strong>
+                                        <strong>${item.message_user.name}</strong>
                                         <small>${formattedTime}</small>
                                     </div>
                                     <div class="card-body">
-                                        <p>${message.content}</p>
+                                        <p>${item.message.content}</p>
                                     </div>
                                 </div>
                             </div>
                         `;
-                        $('#pinned-messages').append(pinnedHtml);
+
+                        html += pinnedHtml;
                     });
                 }
+                $('#pinned-messages').empty().append(html);
             },
-            error: function(xhr) {
+            error: function (xhr) {
                 console.error('Lỗi khi tải tin nhắn đã ghim:', xhr.responseText);
             }
         });
     }
-    fetch('/pin-message', {
+
+    fetch($pinned_messages, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -548,39 +579,20 @@ $(document).ready(function(){
         },
         body: JSON.stringify({
             message_id: selectedMessageId, // ID của tin nhắn
+            room_id: global_room_id, // ID của room
         })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            console.log('Ghim tin nhắn thành công:', data);
-        } else {
-            console.error('Lỗi:', data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Lỗi không mong muốn:', error);
-    });
-    fetch('/pin-message', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            message_id: selectedMessageId, // ID của tin nhắn
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            if (data.success) {
+                console.log('Ghim tin nhắn thành công:', data);
+            } else {
+                console.error('Lỗi:', data.error);
+            }
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            console.log('Ghim tin nhắn thành công:', data);
-        } else {
-            console.error('Lỗi:', data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Lỗi không mong muốn:', error);
-    });
-        
+        .catch(error => {
+            console.error('Lỗi không mong muốn:', error);
+        });
+
 });

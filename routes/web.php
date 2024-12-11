@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashBoardController;
+use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\frontend\CustomerController;
 use App\Http\Controllers\frontend\HomeController;
 use App\Http\Controllers\frontend\ChatController;
@@ -50,14 +51,7 @@ Route::middleware(['auth'])->group(function () {
 
     // room routes
     Route::post('/create-room', [RoomController::class, 'store'])->name('create.room');
-    // Chat Routes (Requires Auth)
-    // Route::get('/rooms', [ChatController::class, 'index'])->name('rooms.index'); // View all rooms
-    // Route::get('/rooms/create', [ChatController::class, 'create'])->name('rooms.create'); // Create room form
-    // Route::post('/rooms', [ChatController::class, 'store'])->name('rooms.store'); // Store new room
-    // Route::get('/rooms/{room}', [ChatController::class, 'show'])->name('rooms.show'); // Show room messages (Note the model binding)
-    // Route::post('/rooms/{room}/add-user', [ChatController::class, 'addUserToRoom'])->name('rooms.addUser'); // Add user to room
-    // Route::post('/rooms/{room}/messages', [ChatController::class, 'sendMessage'])->name('rooms.sendMessage'); // Send message
-
+   
 });
 
 
@@ -82,6 +76,15 @@ Route::prefix('admin')->middleware('handleLoginAdmin')->group(function () {
     Route::get('/profile/show', [UserController::class, 'showProfileAdmin'])->name('admin.profile.show');
     Route::get('/profile/update', [UserController::class, 'showFormUpdateAdmin'])->name('admin.profile.update');
     Route::patch('/profile/update', [UserController::class, 'updateProfileAdmin']);
+
+    //Route CRUD Room
+    Route::get('/rooms', [RoomController::class, 'index'])->name('rooms.index');
+    Route::get('/rooms/create', [RoomController::class, 'create'])->name('rooms.create');
+    Route::post('/rooms/store', [RoomController::class, 'store'])->name('rooms.store');
+    Route::get('/rooms/{room}', [RoomController::class, 'show'])->name('rooms.show');
+    Route::get('/rooms/{room}/edit', [RoomController::class, 'edit'])->name('rooms.edit');
+    Route::put('/rooms/{room}', [RoomController::class, 'update'])->name('rooms.update');
+    Route::delete('/rooms/{room}', [RoomController::class, 'destroy'])->name('rooms.destroy');
 
 });
 

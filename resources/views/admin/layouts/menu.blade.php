@@ -50,7 +50,7 @@
         </li>
         
         <li>
-          <a href="">
+          <a href="{{ route('rooms.index') }}">
             <i class="fa fa-th"></i> <span>Quản lý Room Chats</span>
             <span class="pull-right-container">
               <small class="label pull-right bg-green">Hot</small>

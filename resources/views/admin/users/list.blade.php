@@ -39,7 +39,7 @@
                         <td>
                             <div class="dropdown">
                                 <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                  Hành động
+                                  ...
                                 </button>
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                     <form action="{{ route('users.edit', $item->id) }}" method="GET" style="display: inline;">

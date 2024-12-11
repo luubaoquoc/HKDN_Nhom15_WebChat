@@ -39,14 +39,7 @@
         
         
       </ul>
-      <ul>
-        @foreach ($rooms as $room)
-            <li>
-                <a href="{{ route('rooms.show', $room->id) }}">{{ $room->name }}</a>
-                <small>({{ $room->users->count() }} members)</small>
-            </li>
-        @endforeach
-    </ul>
+      
     </section>
     <!-- /.sidebar -->
   </aside>

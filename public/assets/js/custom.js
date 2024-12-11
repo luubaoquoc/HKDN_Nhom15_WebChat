@@ -1,4 +1,12 @@
 window.currentChannel = null;
+$(document).ready(function() {
+    // Cấu hình CSRF token cho các yêu cầu AJAX
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+});
 
 $(document).ready(function () {
     //Roomchat stated
@@ -79,7 +87,8 @@ $(document).ready(function () {
     });
 
 
-    $('#addMemberForm').submit(function (e) {
+    
+    $('#addMemberForm').submit(function(e){
         e.preventDefault()
 
         var formData = $(this).serialize()
@@ -438,7 +447,11 @@ $(document).ready(function () {
         });
     }
 
-    $(document).on('click', '.more-options', function () {
+
+
+    
+
+    $(document).on('click', '.more-options', function() {
         var memberId = $(this).data('id');
         var menu = $('#moreOptionsMenu' + memberId);
         menu.toggleClass('show');
@@ -463,7 +476,14 @@ $(document).ready(function () {
         }
     });
 
-    $(document).on('click', '#confirmDeleteMember', function () {
+    //  // Khi nhấn nút "Thêm thành viên", mở modal "addMemberModal"
+    //  $('#addMemberBtn').on('click', function() {
+    //     // Mở modal "addMemberModal"
+    //     $('#addMemberModal').modal('show');
+    // });
+
+
+    $(document).on('click', '#confirmDeleteMember', function() {
         var memberId = $(this).data('member-id');
         var roomId = $(this).data('room-id');
 
@@ -595,4 +615,72 @@ $(document).ready(function () {
             console.error('Lỗi không mong muốn:', error);
         });
 
+
+
+    // $('#addMemberBtn').click(function() {
+    //     const roomId = $('#roomId').val(); // Lấy ID phòng từ input hoặc nơi nào đó trong trang
+    
+    //     $.ajax({
+    //         url: `/room/${roomId}/available-members`,  // Đảm bảo API này tồn tại và trả về dữ liệu chính xác
+    //         method: 'GET',
+    //         success: function(response) {
+    //             const availableMembers = response.availableMembers;
+    //             let memberListHtml = '';
+    //             availableMembers.forEach(function(member) {
+    //                 memberListHtml += `<div><input type="checkbox" name="members[]" value="${member.id}"> ${member.name}</div>`;
+    //             });
+    //             $('#availableMembers').html(memberListHtml);
+    //         },
+    //         error: function(xhr) {
+    //             console.error('Error loading available members:', xhr.responseText);
+    //         }
+    //     });
+    // });
+// Hiển thị modal khi nhấn nút thêm thành viên
+
+
+// $(document).ready(function() {
+//     // Hiển thị modal khi nhấn nút thêm thành viên
+//     $('#addMemberBtn').on('click', function() {
+//         $('#addMembersModal1').show();
+//     });
+
+//     // Đóng modal khi nhấn nút "Đóng"
+//     $('#closeCustomModal').on('click', function() {
+//         $('#addMembersModal1').hide();
+//     });
+
+//     // Gửi form khi chọn thành viên
+//     $('#addMembersForm1').on('submit', function(event) {
+//         event.preventDefault();
+
+//         var formData = new FormData(this);
+//         var roomId = $(this).data('room-id');
+
+//         formData.append('room_id', roomId);
+
+//         $.ajax({
+//             url: '/add-members',
+//             type: 'POST',
+//             data: formData,
+//             processData: false,
+//             contentType: false,
+//             headers: {
+//                 'X-CSRF-TOKEN': '{{ csrf_token() }}' // Đảm bảo gửi CSRF token
+//             },
+//             success: function(data) {
+//                 alert(data.msg || data.error);
+//                 if (data.success) {
+//                     // Đóng modal hoặc làm mới danh sách thành viên
+//                     $('#addMembersModal1').hide();
+//                 }
+//             }
+//         });
+//     });
+// });
+
+
+
+
+    
 });

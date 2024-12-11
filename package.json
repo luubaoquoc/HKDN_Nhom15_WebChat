@@ -10,8 +10,7 @@
         "production": "mix --production"
     },
     "devDependencies": {
-        "@babel/plugin-proposal-optional-chaining": "^7.21.0",
-        "axios": "^0.25",
+        "axios": "^1.7.9",
         "laravel-echo": "^1.17.1",
         "laravel-mix": "^6.0.6",
         "lodash": "^4.17.19",

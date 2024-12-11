@@ -57,15 +57,16 @@ Route::middleware(['auth'])->group(function () {
 
 
 //route Room
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::post('/create-room', [HomeController::class, 'createRoom'])->name('createRoom');
-    Route::post('/add-member', [HomeController::class, 'addMembers'])->name('addMembers');
-    Route::post('/save-room-chat', [HomeController::class, 'saveRoomChat'])->name('saveRoomChat');
-    Route::post('/load-room-chats', [HomeController::class, 'loadRoomChats'])->name('loadRoomChats');
-    Route::post('/delete-room-chats', [HomeController::class, 'deleteRoomChats'])->name('deleteRoomChats');
-    Route::get('/room-members', [HomeController::class, 'showRoomMembers'])->name('showRoomMembers');
-    Route::post('/remove-member', [HomeController::class, 'removeMember'])->name('removeMember');
-    Route::post('/upload', [HomeController::class, 'saveRoomChat'])->name('upload');
+// Route::middleware(['auth', 'verified'])->get('/rooms', [HomeController::class, 'loadRooms'])->name('rooms');
+Route::middleware(['auth', 'verified'])->post('/create-room', [HomeController::class, 'createRoom'])->name('createRoom');
+Route::middleware(['auth', 'verified'])->post('/add-member', [HomeController::class, 'addMembers'])->name('addMembers');
+Route::post('/save-room-chat', [HomeController::class,'saveRoomChat'])->name('saveRoomChat');
+Route::post('/load-room-chats', [HomeController::class,'loadRoomChats'])->name('loadRoomChats');
+Route::post('/delete-room-chats', [HomeController::class,'deleteRoomChats'])->name('deleteRoomChats');
+Route::get('/room-members', [HomeController::class, 'showRoomMembers'])->name('showRoomMembers');
+Route::post('/delete-room-chats', [HomeController::class,'deleteRoomChats'])->name('deleteRoomChats');
+Route::post('/remove-member', [HomeController::class, 'removeMember'])->name('removeMember');
+Route::post('/add-members', [HomeController::class, 'addMembers1'])->name('add.members1');
 
     
     /* Pin message routes */
@@ -75,7 +76,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('unpin-message', [MessagePinnedApi::class, 'unpin'])->name('api.pin.message.unpin');
         Route::get('detail-pin-message', [MessagePinnedApi::class, 'detail'])->name('api.pin.message.detail');
     });
-});
+
 
 //route Admin
 Route::get('/admin/login', [UserController::class, 'getLogin'])->name('admin.login');

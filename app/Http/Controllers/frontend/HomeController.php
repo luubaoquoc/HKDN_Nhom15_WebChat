@@ -78,6 +78,62 @@ class HomeController extends Controller
             return response()->json(['error' => 'Có lỗi xảy ra, vui lòng thử lại!'], 500);
         }
     }
+    public function addMembers1(Request $request)
+{
+    try {
+        // Kiểm tra nếu không có thành viên được chọn
+        if (!isset($request->members) || count($request->members) == 0) {
+            return response()->json(['error' => 'Vui lòng chọn ít nhất một thành viên.'], 400);
+        }
+
+        // Thêm người tạo phòng vào danh sách thành viên (nếu chưa có)
+        $creatorMember = Member::firstOrCreate([
+            'room_id' => $request->room_id,
+            'user_id' => auth()->id(),  // Người tạo phòng
+        ], [
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        Log::info("Thêm người tạo phòng vào room_id: {$request->room_id}");
+
+        // Thêm các thành viên mới vào phòng, tránh trùng lặp
+        $addedMembers = 0;  // Biến đếm số thành viên được thêm
+        foreach ($request->members as $userId) {
+            // Kiểm tra nếu người dùng đã là thành viên trong phòng
+            $existingMember = Member::where('room_id', $request->room_id)
+                                    ->where('user_id', $userId)
+                                    ->first();
+
+            // Nếu chưa có, mới thêm vào phòng
+            if (!$existingMember) {
+                Member::create([
+                    'room_id' => $request->room_id,
+                    'user_id' => $userId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                $addedMembers++;  // Tăng số thành viên đã thêm
+            }
+        }
+
+        // Kiểm tra nếu có thành viên mới được thêm
+        if ($addedMembers > 0) {
+            Log::info("Đã thêm {$addedMembers} thành viên vào phòng room_id: {$request->room_id}");
+            return response()->json(['msg' => 'Thêm thành viên thành công', 'success' => true], 200);
+        } else {
+            return response()->json(['msg' => 'Không có thành viên mới nào được thêm (tất cả đã tồn tại)', 'success' => true], 200);
+        }
+
+    } catch (\Exception $e) {
+        // Ghi log lỗi nếu có
+        Log::error('Lỗi thêm thành viên: ' . $e->getMessage());
+        return response()->json(['error' => 'Có lỗi xảy ra, vui lòng thử lại!'], 500);
+    }
+}
+
+
+
 
     public function loadRoomChats(Request $request){
         try {
@@ -170,214 +226,9 @@ class HomeController extends Controller
         }
     }
 
-    public function saveRoomChat(Request $request)
-    {
-        try {
-//            DB::beginTransaction();
-//
-//            // Khởi tạo dữ liệu cơ bản
-//            $data = [
-//                'user_id' => auth()->id(),
-//                'room_id' => $request->room_id,
-//                'pinned' => false
-//            ];
-//
-//            // Xử lý nội dung tin nhắn nếu có
-//            if ($request->filled('message')) {
-//                $data['content'] = $request->message;
-//            }
-//
-//            // Lưu tin nhắn vào database trước
-//            $chat = RoomChat::create($data);
-//
-//            // Kiểm tra và xử lý file sau khi đã có chat record
-//            if ($request->hasFile('file')) {
-//                $file = $request->file('file');
-//
-//                if (!$file->isValid()) {
-//                    DB::rollBack();
-//                    return response()->json(['error' => 'File không hợp lệ'], 400);
-//                }
-//
-//                $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-//                $fileType = $file->getMimeType();
-//                $isImage = strpos($fileType, 'image') === 0;
-//
-//                // Validate file type
-//                $allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jsp'];
-//                $allowedDocTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-//
-//                if (!in_array($fileType, array_merge($allowedImageTypes, $allowedDocTypes))) {
-//                    DB::rollBack();
-//                    return response()->json(['error' => 'Định dạng file không được hỗ trợ'], 400);
-//                }
-//
-//                // Validate file size (max 5MB)
-//                if ($file->getSize() > 5 * 1024 * 1024) {
-//                    DB::rollBack();
-//                    return response()->json(['error' => 'File không được vượt quá 5MB'], 400);
-//                }
-//
-//                $uploadPath = $isImage ? 'chat_files/images' : 'chat_files/documents';
-//                $path = $file->storeAs($uploadPath, $fileName, 'public');
-//
-//                if (!$path) {
-//                    DB::rollBack();
-//                    return response()->json(['error' => 'Không thể lưu file'], 500);
-//                }
-//
-//                // Cập nhật thông tin file vào chat record
-//                $chat->update([
-//                    'file_url' => Storage::url($path),
-//                    'content' => $fileName,
-//                    'file_path' => $path
-//                ]);
-//            }
-//
-//            // Xử lý tin nhắn được ghim
-//            if ($request->boolean('pinned')) {
-//                $chat->update([
-//                    'pinned' => true,
-//                    'pin_expires_at' => $request->pin_expires ? Carbon::parse($request->pin_expires) : now()->addMinutes(120)
-//                ]);
-//            }
-//
-//            // Refresh chat data với user info
-//            $chat->load('user');
-//
-//            DB::commit();
-            DB::beginTransaction();
+ 
 
-            $room_id = $request->input('room_id');
-            $message = $request->input('message');
 
-            $file_url = null;
-            if ($request->hasFile('file')) {
-                $item = $request->file('file');
-                $itemPath = $item->store('file', 'public');
-                $file_url = asset('storage/' . $itemPath);
 
-                $fileType = $item->getMimeType();
-                $isImage = strpos($fileType, 'image') === 0;
-            }
 
-            $chat = RoomChat::create([
-                'user_id' => auth()->id(),
-                'room_id' => $room_id,
-                'content' => $message,
-                'file_url' => $file_url,
-            ]);
-
-            $chat->load('user');
-
-            DB::commit();
-            // Gửi sự kiện đến các client
-            event(new RoomMessageEvent($chat));
-
-            return response()->json([
-                'success' => true,
-                'data' => $chat,
-                'file_type' => isset($isImage) ? ($isImage ? 'image' : 'document') : null
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Lỗi lưu tin nhắn: ' . $e->getMessage());
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
-    public function pinMessage(Request $request)
-    {
-        try {
-            if (!$request->has('message_id')) {
-                return response()->json(['error' => 'Thiếu message_id'], 400);
-            }
-
-            $message = RoomChat::findOrFail($request->message_id);
-            $room = Room::findOrFail($message->room_id);
-
-            // Kiểm tra quyền ghim tin nhắn
-            if ($room->create_by !== auth()->id()) {
-                return response()->json(['error' => 'Bạn không có quyền ghim tin nhắn'], 403);
-            }
-
-            DB::beginTransaction();
-
-            // Cập nhật trạng thái ghim
-            $message->update([
-                'pinned' => !$message->pinned,
-                'pin_expires_at' => !$message->pinned ? now()->addMinutes(120) : null
-            ]);
-
-            // Broadcast sự kiện ghim tin nhắn
-            event(new MessagePinnedEvent($message, $message->pinned));
-
-            // Lấy danh sách tin nhắn đã ghim còn hiệu lực
-            $pinnedMessages = RoomChat::where('room_id', $message->room_id)
-                ->where('pinned', true)
-                ->where(function($query) {
-                    $query->whereNull('pin_expires_at')
-                          ->orWhere('pin_expires_at', '>', now());
-                })
-                ->with('user')
-                ->get();
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'message' => $message->pinned ? 'Tin nhắn đã được ghim' : 'Tin nhắn đã được bỏ ghim',
-                'pinned_messages' => $pinnedMessages
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Lỗi ghim tin nhắn: ' . $e->getMessage());
-            return response()->json(['error' => 'Có lỗi xảy ra khi ghim tin nhắn'], 500);
-        }
-    }
-
-    public function getPinnedMessages(Request $request)
-    {
-        try {
-            // Validate request
-            if (!$request->has('room_id')) {
-                return response()->json(['error' => 'Thiếu room_id'], 400);
-            }
-
-            // Kiểm tra room tồn tại
-            $room = Room::findOrFail($request->room_id);
-
-            // Lấy tin nhắn đã ghim còn hiệu lực
-            $pinnedMessages = RoomChat::where('room_id', $request->room_id)
-                ->where('pinned', true)
-                ->where(function($query) {
-                    $query->whereNull('pin_expires_at')
-                    ->orWhere('pin_expires_at', '>', now());
-                })
-                ->with(['user' => function($query) {
-                    $query->select('id', 'name', 'email');
-                }])
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-            // Transform data trước khi trả về
-            $pinnedMessages->transform(function($message) {
-                if ($message->file_path) {
-                    $message->file_url = Storage::disk('public')->url($message->file_path);
-                }
-                return $message;
-            });
-
-            return response()->json([
-                'success' => true,
-                'pinned_messages' => $pinnedMessages
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Lỗi lấy tin nhắn ghim: ' . $e->getMessage());
-            return response()->json(['error' => 'Có lỗi xảy ra khi lấy tin nhắn ghim'], 500);
-        }
-    }
 }

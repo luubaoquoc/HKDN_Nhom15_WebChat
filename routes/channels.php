@@ -21,7 +21,6 @@ use App\Models\Member;
 
 Broadcast::channel('broadcast-group-message.{room_id}', function ($user, $room_id) {
     Log::info('User: ' . $user->id . ' is trying to join room: ' . $room_id);
-    // Kiểm tra nếu người dùng là thành viên của phòng
     return Member::where('room_id', $room_id)->where('user_id', $user->id)->exists();
 });
 
@@ -29,4 +28,7 @@ Broadcast::channel('room-message-deleted', function ($user) {
     return $user;
 });
 
+Broadcast::channel('rooms-load', function ($user) {
+    return $user;
+});
 

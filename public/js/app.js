@@ -2165,16 +2165,8 @@ module.exports = {
 function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-__webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js"); // Đảm bảo axios đã được cấu hình
+__webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 window.currentChannel = null;
-$(document).ready(function () {
-  // Cấu hình CSRF token cho các yêu cầu AJAX
-  $.ajaxSetup({
-    headers: {
-      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-    }
-  });
-});
 $(document).ready(function () {
   //Roomchat stated
   $('.room-list').click(function () {
@@ -2184,10 +2176,11 @@ $(document).ready(function () {
     global_room_id = roomId;
     console.log("Selected Room ID:", global_room_id);
     $('.chat-section').show();
-    Echo["private"]('broadcast-group-message.' + global_room_id).listen('getRoomChatMessage', function (data) {
+    Echo["private"]('broadcast-group-message.' + global_room_id).listen('.getRoomChatMessage', function (data) {
       console.log('Message received:', data);
+      var formattedTime = dayjs(data.chat.created_at).format('HH:mm');
       if (user_id != data.chat.user_id && global_room_id == data.chat.room_id) {
-        var html = "\n                    <li class=\"d-flex justify-content-between mb-4 distance-user-chat\" id=\"".concat(data.chat.id, "-chat\">\n                        <img src=\"https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp\" alt=\"avatar\"\n                            class=\"rounded-circle d-flex align-self-start me-3 shadow-1-strong\" width=\"60\">\n                        <div class=\"card mask-custom\">\n                            <div class=\"card-header d-flex justify-content-between p-3\"\n                            style=\"border-bottom: 1px solid rgba(255,255,255,.3);\">\n                                <p class=\"fw-bold mb-0\">Brad Pitt</p>\n                                <p class=\"text-light small mb-0\"><i class=\"far fa-clock\"></i> Just now</p>\n                            </div>\n                            <div class=\"card-body d-flex justify-content-between align-items-center\">\n                                <p class=\"mb-0\">").concat(data.chat.content, "</p>\n                            </div>\n                        </div>\n                    </li>");
+        var html = "\n                    <li class=\"d-flex justify-content-between mb-4 distance-user-chat\" id=\"".concat(data.chat.id, "-chat\">\n                        <img src=\"https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp\" alt=\"avatar\" \n                            class=\"rounded-circle d-flex align-self-start me-3 shadow-1-strong\" width=\"60\">\n                        <div class=\"card mask-custom flex-grow-1\" style=\"min-width: 200px; max-width: 100%;\">\n                            <div class=\"card-header d-flex justify-content-between p-3\">\n                                <p class=\"fw-bold mb-0\">").concat(data.chat.user.name, "</p>\n                                <p class=\"text-light small mb-0\"><i class=\"far fa-clock me-2\"></i>").concat(formattedTime, "</p>\n                            </div>\n                            <div class=\"card-body d-flex justify-content-between align-items-center\">\n                                <p class=\"mb-0 text-wrap\">\n                                    ").concat(data.chat.content, "   \n                                </p>\n                                <i class=\"far fa-trash-alt deleteRoomMessage\" aria-hidden=\"true\" data-id = \"").concat(data.chat.id, "\" data-bs-toggle=\"modal\" data-bs-target=\"#roomdeleteChatModal\"></i>\n                            </div>\n                        </div>\n                    </li>");
         $('#list-chatRoom').append(html);
       }
     }).error(function (err) {
@@ -2195,7 +2188,18 @@ $(document).ready(function () {
     });
     loadRoomChats();
     loadRoomMembers();
-    loadPinnedMessages(); // Thêm hàm load tin nhắn đã ghim
+  });
+  Echo["private"]('rooms-load').listen('.roomchatLoad', function (event) {
+    console.log('Message received:', event);
+    var html = '';
+    if (event.rooms && event.rooms.length > 0) {
+      event.rooms.forEach(function (room) {
+        html += "\n                    <li class=\"p-2 border-bottom room-list\" data-id=\"".concat(room.id, "\">\n                        <a href=\"#!\" class=\"d-flex justify-content-between link-light\">\n                            <div class=\"d-flex flex-row\">\n                                <img src=\"").concat(room.avatar, "\" alt=\"avatar\" class=\"rounded-circle d-flex align-self-center me-3 shadow-1-strong\" width=\"60\">\n                                <div class=\"pt-1\">\n                                    <p class=\"fw-bold mb-0\">").concat(room.name, "</p>\n                                    <p class=\"small text-white\">").concat(room.description, "</p>\n                                </div>\n                            </div>\n                            <div class=\"pt-1\">\n                                <p class=\"small text-white mb-1\">").concat(room.last_activity, "</p>\n                            </div>\n                        </a>\n                    </li>\n                ");
+      });
+      $('#room-list').append(html);
+    }
+  }).error(function (err) {
+    console.error('Error while subscribing:', err);
   });
 
   //Chat room script
@@ -2315,7 +2319,7 @@ $(document).ready(function () {
         } else if (res.file_type === 'document') {
           image = "<a href=\"".concat(res.data.file_url, "\" target=\"_blank\">").concat(res.data.content, "</a>");
         }
-        var html = "\n                    <li class=\"d-flex justify-content-between mb-4 current-user-chat\" id=\"".concat(res.data.id, "-chat\">\n                        <div class=\"card mask-custom w-100\">\n                        <div class=\"card-header d-flex justify-content-between p-3\"\n                            style=\"border-bottom: 1px solid rgba(255,255,255,.3);\">\n                            <p class=\"fw-bold mb-0\">").concat(res.data.user.name, "</p>\n                            <p class=\"text-light small mb-0\"><i class=\"far fa-clock me-2\"></i>").concat(formattedTime, "</p>\n                        </div>\n                        <div class=\"card-body d-flex justify-content-between align-items-center gap-2\">\n                            <div class=\"mb-0\">\n                            <div class=\"mb-0\">\n                                ").concat(image ? image : '', "\n                            </div>\n                            <div class=\"mb-0\">\n                                ").concat(content, "\n                            </div>\n                                </div>\n                            <div>\n                                <i class=\"fas fa-thumbtack me-2 pinMessage\" aria-hidden=\"true\" data-id=\"").concat(res.data.id, "\" data-pinned=\"false\"></i>\n                                <i class=\"far fa-trash-alt deleteRoomMessage\" aria-hidden=\"true\" data-id=\"").concat(res.data.id, "\" data-bs-toggle=\"modal\" data-bs-target=\"#roomdeleteChatModal\"></i>\n                            </div>\n                        </div>\n                        </div>\n                        <img src=\"https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp\" alt=\"avatar\"\n                        class=\"rounded-circle d-flex align-self-start ms-3 shadow-1-strong\" width=\"60\">\n                    </li>\n                ");
+        var html = "\n                    <li class=\"d-flex justify-content-between mb-4 current-user-chat\" id=\"".concat(res.data.id, "-chat\">\n                        <div class=\"card mask-custom w-100\">\n                        <div class=\"card-header d-flex justify-content-between p-3\"\nstyle=\"border-bottom: 1px solid rgba(255,255,255,.3);\">\n                            <p class=\"fw-bold mb-0\">").concat(res.data.user.name, "</p>\n                            <p class=\"text-light small mb-0\"><i class=\"far fa-clock me-2\"></i>").concat(formattedTime, "</p>\n                        </div>\n                        <div class=\"card-body d-flex justify-content-between align-items-center gap-2\">\n                            <div class=\"mb-0\">\n                            <div class=\"mb-0\">\n                                ").concat(image ? image : '', "\n                            </div>\n                            <div class=\"mb-0\">\n                                ").concat(content, "\n                            </div>\n                                </div>\n                            <div>\n                                <i class=\"fas fa-thumbtack me-2 pinMessage\" aria-hidden=\"true\" data-id=\"").concat(res.data.id, "\" data-pinned=\"false\"></i>\n                                <i class=\"far fa-trash-alt deleteRoomMessage\" aria-hidden=\"true\" data-id=\"").concat(res.data.id, "\" data-bs-toggle=\"modal\" data-bs-target=\"#roomdeleteChatModal\"></i>\n                            </div>\n                        </div>\n                        </div>\n                        <img src=\"https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp\" alt=\"avatar\"\n                        class=\"rounded-circle d-flex align-self-start ms-3 shadow-1-strong\" width=\"60\">\n                    </li>\n                ");
         $('#list-chatRoom').append(html);
       },
       error: function error(xhr) {
@@ -2324,26 +2328,6 @@ $(document).ready(function () {
       }
     });
   });
-  function loadRooms() {
-    $.ajax({
-      url: '/get-rooms',
-      // Đảm bảo API này trả về danh sách nhóm hiện tại của người dùng
-      type: 'GET',
-      success: function success(res) {
-        $('#room-list').html(''); // Xóa danh sách nhóm cũ
-        if (res.rooms && res.rooms.length > 0) {
-          var html = '';
-          res.rooms.forEach(function (room) {
-            html += "\n                            <li class=\"p-2 border-bottom room-list\" data-id=\"".concat(room.id, "\">\n                                <a href=\"#!\" class=\"d-flex justify-content-between link-light\">\n                                    <div class=\"d-flex flex-row\">\n                                        <img src=\"").concat(room.avatar, "\" alt=\"avatar\" class=\"rounded-circle d-flex align-self-center me-3 shadow-1-strong\" width=\"60\">\n                                        <div class=\"pt-1\">\n                                            <p class=\"fw-bold mb-0\">").concat(room.name, "</p>\n                                            <p class=\"small text-white\">").concat(room.description, "</p>\n                                        </div>\n                                    </div>\n                                    <div class=\"pt-1\">\n                                        <p class=\"small text-white mb-1\">").concat(room.last_activity, "</p>\n                                    </div>\n                                </a>\n                            </li>\n                        ");
-          });
-          $('#room-list').append(html);
-        }
-      },
-      error: function error(xhr) {
-        alert('Lỗi khi tải danh sách nhóm: ' + xhr.responseText);
-      }
-    });
-  }
   function loadRoomChats() {
     $('#list-chatRoom').html('');
     $.ajax({
@@ -2362,18 +2346,11 @@ $(document).ready(function () {
         console.log(chats);
         for (var i = 0; i < chats.length; i++) {
           var formattedTime = dayjs(chats[i].user.created_at).format('HH:mm');
-          var image = null;
-          var check = isImageFile(chats[i].file_url);
-          if (check) {
-            image = "<img src=\"".concat(chats[i].file_url, "\" class=\"img-fluid\">");
-          } else if (chats[i].file_url && !check) {
-            image = "<a href=\"".concat(chats[i].file_url, "\" target=\"_blank\">").concat(res.data.content, "</a>");
-          }
           if (chats[i].user_id != user_id) {
-            html = "\n                            <li class=\"d-flex justify-content-between mb-4 distance-user-chat\" id=\"".concat(chats[i].id, "-chat\">\n                                <img src=\"https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp\" alt=\"avatar\"\n                                    class=\"rounded-circle d-flex align-self-start me-3 shadow-1-strong\" width=\"60\">\n                                <div class=\"card mask-custom flex-grow-1\" style=\"min-width: 200px; max-width: 100%;\">\n                                    <div class=\"card-header d-flex justify-content-between p-3\">\n                                        <p class=\"fw-bold mb-0\">").concat(chats[i].user.name, "</p>\n                                        <p class=\"text-light small mb-0\"><i class=\"far fa-clock me-2\"></i>").concat(formattedTime, "</p>\n                                    </div>\n                                    <div class=\"card-body d-flex justify-content-between align-items-center\">\n\n                                         <div class=\"mb-0\">\n                            <div class=\"mb-0\">\n                                ").concat(chats[i].file_url ? image : '', "\n                            </div>\n                            <div class=\"mb-0 text-wrap\">\n                                 ").concat(chats[i].content, "\n                            </div>\n                                </div>\n                                        <div>\n                                            <i class=\"fas fa-thumbtack me-2 pinMessage ").concat(chats[i].is_pinned ? 'text-warning' : '', "\" aria-hidden=\"true\" data-id=\"").concat(chats[i].id, "\" data-pinned=\"").concat(chats[i].pinned, "\"></i>\n                                            <i class=\"far fa-trash-alt deleteRoomMessage\" aria-hidden=\"true\" data-id=\"").concat(chats[i].id, "\" data-bs-toggle=\"modal\" data-bs-target=\"#roomdeleteChatModal\"></i>\n                                        </div>\n                                    </div>\n                                </div>\n                            </li> ");
+            html = "\n                            <li class=\"d-flex justify-content-between mb-4 distance-user-chat\" id=\"".concat(chats[i].id, "-chat\">\n                                <img src=\"https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-6.webp\" alt=\"avatar\" \n                                    class=\"rounded-circle d-flex align-self-start me-3 shadow-1-strong\" width=\"60\">\n                                <div class=\"card mask-custom flex-grow-1\" style=\"min-width: 200px; max-width: 100%;\">\n                                    <div class=\"card-header d-flex justify-content-between p-3\">\n                                        <p class=\"fw-bold mb-0\">").concat(chats[i].user.name, "</p>\n                                        <p class=\"text-light small mb-0\"><i class=\"far fa-clock me-2\"></i>").concat(formattedTime, "</p>\n                                    </div>\n                                    <div class=\"card-body d-flex justify-content-between align-items-center\">\n                                        <p class=\"mb-0 text-wrap\">\n                                            ").concat(chats[i].content, "        \n                                        </p>\n                                        <i class=\"far fa-trash-alt deleteRoomMessage\" aria-hidden=\"true\" data-id = \"").concat(chats[i].id, "\" data-bs-toggle=\"modal\" data-bs-target=\"#roomdeleteChatModal\"></i>\n                                    </div>\n                                </div>\n                            </li> ");
             $('#list-chatRoom').append(html);
           } else {
-            html = "\n                            <li class=\"d-flex justify-content-between mb-4 current-user-chat\" id=\"".concat(chats[i].id, "-chat\">\n                                <div class=\"card mask-custom w-100\">\n                                <div class=\"card-header d-flex justify-content-between p-3\"\n                                    style=\"border-bottom: 1px solid rgba(255,255,255,.3);\">\n                                    <p class=\"fw-bold mb-0\">").concat(chats[i].user.name, "</p>\n                                    <p class=\"text-light small mb-0\"><i class=\"far fa-clock me-2\"></i>").concat(formattedTime, "</p>\n                                </div>\n                                <div class=\"card-body d-flex justify-content-between align-items-center\">\n                                     <div class=\"mb-0\">\n                            <div class=\"mb-0\">\n                                 ").concat(chats[i].file_url ? image : '', "\n                            </div>\n                            <div class=\"mb-0 text-wrap\">\n                                 ").concat(chats[i].content, "\n                            </div>\n                                </div>\n                                    <div>\n                                        <i class=\"fas fa-thumbtack me-2 pinMessage ").concat(chats[i].is_pinned ? 'text-warning' : '', "\" aria-hidden=\"true\" data-id=\"").concat(chats[i].id, "\" data-pinned=\"").concat(chats[i].pinned, "\"></i>\n                                        <i class=\"far fa-trash-alt deleteRoomMessage\" aria-hidden=\"true\" data-id=\"").concat(chats[i].id, "\" data-bs-toggle=\"modal\" data-bs-target=\"#roomdeleteChatModal\"></i>\n                                    </div>\n                                </div>\n                                </div>\n                                <img src=\"https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp\" alt=\"avatar\"\n                                class=\"rounded-circle d-flex align-self-start ms-3 shadow-1-strong\" width=\"60\">\n                            </li>\n                        ");
+            html = "\n                            <li class=\"d-flex justify-content-between mb-4 current-user-chat\" id=\"".concat(chats[i].id, "-chat\">\n                                <div class=\"card mask-custom w-100\">\n                                <div class=\"card-header d-flex justify-content-between p-3\"\n                                    style=\"border-bottom: 1px solid rgba(255,255,255,.3);\">\n                                    <p class=\"fw-bold mb-0\"> B\u1EA1n </p>\n                                    <p class=\"text-light small mb-0\"><i class=\"far fa-clock me-2\"></i>").concat(formattedTime, "</p>\n                                </div>\n                                <div class=\"card-body d-flex justify-content-between align-items-center\">\n                                    <p class=\"mb-0\">\n                                        ").concat(chats[i].content, "\n                                    </p>\n                                    <i class=\"far fa-trash-alt deleteRoomMessage\" aria-hidden=\"true\" data-id = \"").concat(chats[i].id, "\" data-bs-toggle=\"modal\" data-bs-target=\"#roomdeleteChatModal\"></i>                  \n                                </div>\n                                </div>\n                                <img src=\"https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp\" alt=\"avatar\"\n                                class=\"rounded-circle d-flex align-self-start ms-3 shadow-1-strong\" width=\"60\">\n                            </li>                   \n                        ");
             $('#list-chatRoom').append(html);
           }
         }
@@ -2384,19 +2361,11 @@ $(document).ready(function () {
       }
     });
   }
-  function isImageFile(url) {
-    if (url) {
-      var extension = url.split('.').pop().toLowerCase();
-      var imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
-      return imageExtensions.includes(extension);
-    }
-    return false;
-  }
   $(document).on('click', '.deleteRoomMessage', function () {
     var msg = $(this).parent().text();
     $('#delete-room-message').text(msg);
     $('#delete-room-message-id').val($(this).attr('data-id'));
-    Echo["private"]('room-message-deleted').listen('RoomMessageDeletedEvent', function (data) {
+    Echo["private"]('room-message-deleted').listen('.roomchatDeleteMessage', function (data) {
       console.log(data);
       $('#' + data.id + '-chat').remove();
     });
@@ -2476,13 +2445,6 @@ $(document).ready(function () {
       $('#confirmDeleteMember').data('room-id', roomId);
     }
   });
-
-  //  // Khi nhấn nút "Thêm thành viên", mở modal "addMemberModal"
-  //  $('#addMemberBtn').on('click', function() {
-  //     // Mở modal "addMemberModal"
-  //     $('#addMemberModal').modal('show');
-  // });
-
   $(document).on('click', '#confirmDeleteMember', function () {
     var memberId = $(this).data('member-id');
     var roomId = $(this).data('room-id');
@@ -2502,14 +2464,13 @@ $(document).ready(function () {
         if (res.success) {
           alert('Xóa thành viên thành công');
           if (memberId == user_id) {
-            console.log('Phần tử nhóm cần xóa:', $('div[data-id="' + roomId + '"]')); // Kiểm tra xem phần tử có được chọn đúng không
+            console.log('Phần tử nhóm cần xóa:', $('div[data-id="' + roomId + '"]'));
             $('li[data-id="' + roomId + '"]').remove();
             alert('Bạn đã rời khỏi nhóm này');
           } else {
             $('[data-room-id="' + roomId + '"][data-member-id="' + memberId + '"]').remove();
           }
           $('#deleteMemberModal').modal('hide');
-          loadRooms();
         } else {
           alert('Có lỗi xảy ra, vui lòng thử lại!');
         }
@@ -2519,141 +2480,6 @@ $(document).ready(function () {
       }
     });
   });
-
-  // Thêm sự kiện click cho nút pin
-  $(document).on('click', '.pinMessage', function () {
-    var messageId = $(this).data('id');
-    var $icon = $(this);
-    $.ajax({
-      url: '/api/pin-message',
-      type: 'POST',
-      data: {
-        message_id: messageId,
-        // ID của tin nhắn
-        room_id: global_room_id,
-        // ID của room
-        user_id: user_id
-      },
-      success: function success(res) {
-        console.log(res);
-        $icon.toggleClass('text-warning');
-        if (res.type == 'success') {
-          $(this).toggleClass('text-warning');
-          alert(res.message);
-          loadPinnedMessages();
-        }
-      },
-      error: function error(xhr) {
-        alert('Lỗi: ' + xhr.responseText);
-      }
-    });
-  });
-
-  // Thêm hàm load tin nhắn đã ghim
-  function loadPinnedMessages() {
-    $.ajax({
-      url: '/api/pin-message?room_id=' + global_room_id,
-      type: 'GET',
-      success: function success(res) {
-        var html = '';
-        if (res.data && res.data.length > 0) {
-          res.data.forEach(function (item) {
-            var formattedTime = dayjs(item.message.created_at).format('HH:mm');
-            var pinnedHtml = "\n                            <div class=\"pinned-message\" id=\"pinned-".concat(item.message.id, "\">\n                                <div class=\"card mask-custom\">\n                                    <div class=\"card-header\">\n                                        <strong>").concat(item.message_user.name, "</strong>\n                                        <small>").concat(formattedTime, "</small>\n                                    </div>\n                                    <div class=\"card-body\">\n                                        <p>").concat(item.message.content, "</p>\n                                    </div>\n                                </div>\n                            </div>\n                        ");
-            html += pinnedHtml;
-          });
-        }
-        $('#pinned-messages').empty().append(html);
-      },
-      error: function error(xhr) {
-        console.error('Lỗi khi tải tin nhắn đã ghim:', xhr.responseText);
-      }
-    });
-  }
-  fetch($pinned_messages, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-    },
-    body: JSON.stringify({
-      message_id: selectedMessageId,
-      // ID của tin nhắn
-      room_id: global_room_id // ID của room
-    })
-  }).then(function (response) {
-    return response.json();
-  }).then(function (data) {
-    console.log(data);
-    if (data.success) {
-      console.log('Ghim tin nhắn thành công:', data);
-    } else {
-      console.error('Lỗi:', data.error);
-    }
-  })["catch"](function (error) {
-    console.error('Lỗi không mong muốn:', error);
-  });
-
-  // $('#addMemberBtn').click(function() {
-  //     const roomId = $('#roomId').val(); // Lấy ID phòng từ input hoặc nơi nào đó trong trang
-
-  //     $.ajax({
-  //         url: `/room/${roomId}/available-members`,  // Đảm bảo API này tồn tại và trả về dữ liệu chính xác
-  //         method: 'GET',
-  //         success: function(response) {
-  //             const availableMembers = response.availableMembers;
-  //             let memberListHtml = '';
-  //             availableMembers.forEach(function(member) {
-  //                 memberListHtml += `<div><input type="checkbox" name="members[]" value="${member.id}"> ${member.name}</div>`;
-  //             });
-  //             $('#availableMembers').html(memberListHtml);
-  //         },
-  //         error: function(xhr) {
-  //             console.error('Error loading available members:', xhr.responseText);
-  //         }
-  //     });
-  // });
-  // Hiển thị modal khi nhấn nút thêm thành viên
-
-  // $(document).ready(function() {
-  //     // Hiển thị modal khi nhấn nút thêm thành viên
-  //     $('#addMemberBtn').on('click', function() {
-  //         $('#addMembersModal1').show();
-  //     });
-
-  //     // Đóng modal khi nhấn nút "Đóng"
-  //     $('#closeCustomModal').on('click', function() {
-  //         $('#addMembersModal1').hide();
-  //     });
-
-  //     // Gửi form khi chọn thành viên
-  //     $('#addMembersForm1').on('submit', function(event) {
-  //         event.preventDefault();
-
-  //         var formData = new FormData(this);
-  //         var roomId = $(this).data('room-id');
-
-  //         formData.append('room_id', roomId);
-
-  //         $.ajax({
-  //             url: '/add-members',
-  //             type: 'POST',
-  //             data: formData,
-  //             processData: false,
-  //             contentType: false,
-  //             headers: {
-  //                 'X-CSRF-TOKEN': '{{ csrf_token() }}' // Đảm bảo gửi CSRF token
-  //             },
-  //             success: function(data) {
-  //                 alert(data.msg || data.error);
-  //                 if (data.success) {
-  //                     // Đóng modal hoặc làm mới danh sách thành viên
-  //                     $('#addMembersModal1').hide();
-  //                 }
-  //             }
-  //         });
-  //     });
-  // });
 });
 
 /***/ }),
@@ -2667,6 +2493,10 @@ $(document).ready(function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var laravel_echo__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! laravel-echo */ "./node_modules/laravel-echo/dist/echo.js");
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 window._ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
 
 /**
@@ -2687,15 +2517,14 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 
 window.Pusher = __webpack_require__(/*! pusher-js */ "./node_modules/pusher-js/dist/web/pusher.js");
-window.Echo = new laravel_echo__WEBPACK_IMPORTED_MODULE_0__["default"]({
+window.Echo = new laravel_echo__WEBPACK_IMPORTED_MODULE_0__["default"](_defineProperty(_defineProperty(_defineProperty({
   broadcaster: 'pusher',
-  key: '0286b80ce79af26f7072',
+  key: "0286b80ce79af26f7072",
+  cluster: "ap1",
+  forceTLS: true,
   wsHost: window.location.hostname,
-  wsPort: 6001,
-  forceTLS: false,
-  disableStats: true,
-  enabledTransports: ['ws', 'wss']
-});
+  wsPort: 6001
+}, "forceTLS", false), "disableStats", false), "encrypted", true));
 window.Echo.connector.pusher.connection.bind('connected', function () {
   console.log('WebSocket connected');
 });

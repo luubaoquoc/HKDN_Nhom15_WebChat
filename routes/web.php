@@ -12,6 +12,7 @@ use App\Http\Controllers\frontend\ProfileController;
 use App\Http\Controllers\frontend\ForgotPasswordController;
 use App\Http\Controllers\Admin\RoomController;
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes

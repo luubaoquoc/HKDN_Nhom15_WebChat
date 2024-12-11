@@ -610,13 +610,10 @@
     const $list_pinned_messages = '{{ route('api.pin.message.list') }}';
     const $api_pinned_messages = '{{ route('api.pin.message.pinned') }}';
     const $unpin_messages = '{{ route('api.pin.message.unpin') }}';
-    const user_id = '{{ auth()->user()->id }}';
 </script>
 <script src="{{ mix('js/app.js') }}"></script>
 <!-- Custom scripts -->
 <script type="text/javascript">
-
-</script>
 
 </body>
 

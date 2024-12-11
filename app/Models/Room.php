@@ -11,22 +11,16 @@ class Room extends Model
 
     protected $fillable = [
         'name',
-        'create_by'
+        'create_by',
     ];
 
-    public function user()
+    // Quan hệ với User
+    public function creator()
     {
-         return $this->belongsToMany(User::class, 'room_user', 'room_id', 'user_id');
+        return $this->belongsTo(User::class, 'create_by');
     }
-    
     public function users()
     {
         return $this->belongsToMany(User::class, 'room_user', 'room_id', 'user_id');
     }
-    
-    public function rooms() {
-        return $this->belongsToMany(Room::class, 'members', 'user_id', 'room_id');
-    }
-    
-
 }

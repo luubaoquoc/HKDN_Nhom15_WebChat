@@ -22,7 +22,7 @@ window.Pusher = require('pusher-js');
 
 window.Echo = new Echo({
     broadcaster: 'pusher',
-    key: 'your_app_key',
+    key: '0286b80ce79af26f7072',
     wsHost: window.location.hostname,
     wsPort: 6001,
     forceTLS: false,

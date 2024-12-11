@@ -40,133 +40,18 @@
                 </li>
             </ul>
 
-        <div class="dropdown text-end">
-          <a href="#" class="d-flex gap-2 link-body-emphasis text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
-            <p class="fw-bold mb-0" style="color: rgba(213, 126, 235, 1)">{{auth()->user()->name}}</p>
-          </a>
-          <ul class="dropdown-menu text-small">
-            <li><a class="dropdown-item" href="#">New project...</a></li>
-            <li><a class="dropdown-item" href="#">Settings</a></li>
-            <li><a class="dropdown-item" href="#">Profile</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Sign out</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <div class="container-flex">
-    <div class="d-flex flex-row" style="width: 100%;">
-    
-    <!-- Start your project here-->
-    <section class="gradient-custom">
-      <div class="container py-5">
-
-        <div class="row">
-
-          <div class="col-md-6 col-lg-5 col-xl-5 mb-4 mb-md-0">
-
-            <div class="d-flex justify-content-between align-items-center">
-              <h5 class="font-weight-bold mb-3 text-center text-white ms-5">Chat</h5>
-              <!-- Button trigger modal -->
-              @if(auth()->user()->role == 1 || auth()->user()->role == 2)
-              <button type="button" class="btn btn-light mb-3 me-5" data-bs-toggle="modal" data-bs-target="#createRoomModal">
-                Thêm nhóm mới
-              </button>
-    @endif
-              
-
-              <!-- Modal -->
-              <div class="modal fade" id="createRoomModal" tabindex="-1" aria-labelledby="exampleModalLabel" >
-                <div class="modal-dialog">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h1 class="modal-title fs-5" id="exampleModalLabel">Tạo phòng chat</h1>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-
-                    <form id="createRoomForm">
-                    @csrf
-                      <div class="modal-body">
-                        
-                        <input type="text" id="roomName" placeholder="Nhập tên phòng chat" name="name" class="form-control w-100" style="height: 45px; font-size: 18px;"> 
-
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Đóng</button>
-                        <button type="submit" class="btn btn-primary">Đồng ý</button>
-                      </div>
-                    </form>
-
-                  </div>
-                </div>
-              </div>
-
-
-              <!-- Add Member Modal -->
-              <div class="modal fade" id="addMemberModal" tabindex="-1" aria-labelledby="addMemberModalLabel" >
-                <div class="modal-dialog">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h1 class="modal-title fs-5" id="addMemberModalLabel">Thêm thành viên vào phòng</h1>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form id="addMemberForm">
-                      @csrf                 
-                      <input type="hidden" id="room_id" name="room_id">
-                      <div class="modal-body">
-
-                      <label for="members">Chọn thành viên:</label>
-                      @if(count($users) > 0)
-                        <div class="list-group" id="membersList">
-                            @foreach ($users as $user)
-                            <div class="list-group-item d-flex justify-content-between align-items-center member-item">
-                                <!-- Tên thành viên -->
-                                <span class="member-name">{{ $user->name }}</span>
-                                <!-- Checkbox -->
-                                <input type="checkbox" name="members[]" value="{{ $user->id }}" class="form-check-input">
-                            </div>
-                            @endforeach
-                        </div>
-                      @else
-                        <div class="card-body">
-                          <p class="text-center text-black">Không có thành viên nào để hiển thị.</p>
-                        </div>
-                      @endif
-                      </div>
-                      <div class="modal-footer">
-                        <span id="addMemberError"></span>
-                        <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Đóng</button>
-                        <button type="submit" class="btn btn-primary">Thêm thành viên</button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-
-            <div class="card mask-custom">
-              @if(count($rooms) > 0)
-                <div class="card-body">
-                  <ul class="list-unstyled mb-0">
-                  @foreach ($rooms as $room)
-                    <li class="p-2 border-bottom room-list" data-id="{{$room->id}}" style="border-bottom: 1px solid rgba(255,255,255,.3) !important;">
-                      <a href="#!" class="d-flex justify-content-between link-light">
-                        <div class="d-flex flex-row">
-                          <img src="https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-1.webp" alt="avatar"
-                            class="rounded-circle d-flex align-self-center me-3 shadow-1-strong" width="60">
-                          <div class="pt-1">
-                            <p class="fw-bold mb-0">{{ $room->name }}</p>
-                            <p class="small text-white">Lorem ipsum dolor sit.</p>
-                          </div>
-                        </div>
-                        <div class="pt-1">
-                          <p class="small text-white mb-1">5 mins ago</p>
-                        </div>
-                      </a>
+            <div class="dropdown text-end">
+                <a href="#" class="d-flex gap-2 link-body-emphasis text-decoration-none" data-bs-toggle="dropdown"
+                   aria-expanded="false">
+                    <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
+                    <p class="fw-bold mb-0" style="color: rgba(213, 126, 235, 1)">{{auth()->user()->name}}</p>
+                </a>
+                <ul class="dropdown-menu text-small">
+                    <li><a class="dropdown-item" href="#">New project...</a></li>
+                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li><a class="dropdown-item" href="#">Profile</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
                     </li>
                     <li><a class="dropdown-item" href="#">Sign out</a></li>
                 </ul>
@@ -451,149 +336,17 @@
             </div>
         </div>
 
-    {{-- Sidebar --}}
-    <div class="flex-shrink-0 p-3" id="side-bar" style="width: 280px; display:none">
-      <a href="/" class="d-flex align-items-center text-center pb-3 mb-3 link-body-emphasis text-decoration-none border-bottom">
-        <span class="fs-5 fw-semibold" id="showRoomName"></span>
-      </a>
-      <div class="d-flex justify-content-center mt-4 mb-4">
-        <!-- Nút thêm thành viên -->
-      @if(auth()->user()->role == 1 || auth()->user()->role == 2)
-      <button type="button" class="btn btn-primary" id="addMemberBtn" style="background: linear-gradient(to bottom right, rgba(252, 203, 144, 1), rgba(213, 126, 235, 1));">Thêm thành viên</button>
-      
-@endif
-
-      
-
-        <!-- Modal hoặc form để chọn thành viên -->
-        <!-- Modal Thêm Thành Viên (Kiểu khung thông báo) -->
-        <div id="addMembersModal1" class="custom-modal">
-          <div class="custom-modal-content">
-            <form id="addMembersForm1">
-              <h5 class="modal-title">Chọn thành viên</h5>
-              <div class="modal-body">
-                @if(count($users) > 0)
-                  <div class="list-group" id="membersList">
-                    @foreach($users as $user)
-                      <div class="list-group-item d-flex justify-content-between align-items-center member-item">
-                        <!-- Tên thành viên -->
-                        <span class="member-name">{{ $user->name }}</span>
-                        <!-- Checkbox -->
-                        <input type="checkbox" name="members[]" value="{{ $user->id }}" class="form-check-input">
-                      </div>
-                    @endforeach
-                  </div>
-                @else
-                  <p class="text-center text-black">Không có thành viên nào để hiển thị.</p>
-                @endif
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-dark" id="closeCustomModal">Đóng</button>
-                <button type="submit" class="btn btn-primary">Thêm</button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <style>
-        /* Tùy chỉnh modal */
-        .custom-modal {
-          display: none; /* Ẩn mặc định */
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(0, 0, 0, 0.5); /* Nền tối */
-          z-index: 9999;
-          justify-content: center;
-          align-items: center;
-        }
-
-        /* Khung modal nhỏ gọn */
-        .custom-modal-content {
-          background: #fff;
-          border-radius: 8px;
-          padding: 20px;
-          width: 400px;
-          max-width: 90%; /* Giới hạn chiều rộng */
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-          position: relative;
-          top: 50%; /* Canh giữa theo chiều dọc */
-          left: 50%; /* Canh giữa theo chiều ngang */
-          transform: translate(-50%, -50%); /* Canh giữa chính xác */
-        }
-
-        .custom-modal .modal-title {
-          font-size: 18px;
-          font-weight: bold;
-          margin-bottom: 15px;
-        }
-
-        .custom-modal .modal-body {
-          max-height: 300px;
-          overflow-y: auto; /* Cuộn nội dung nếu quá dài */
-        }
-
-        .custom-modal .modal-footer {
-          display: flex;
-          justify-content: flex-end;
-          gap: 10px;
-        }
-        </style>
-
-
-
-
-
-      <script>
-          // Hiển thị modal khi nhấn nút thêm thành viên
-          document.getElementById('addMemberBtn').addEventListener('click', function() {
-              document.getElementById('addMembersModal1').style.display = 'block';
-          });
-      // Đóng modal khi nhấn nút "Đóng"
-      document.getElementById('closeCustomModal').addEventListener('click', function () {
-          document.getElementById('addMembersModal1').style.display = 'none';
-      });
-          // Gửi form khi chọn thành viên
-          document.getElementById('addMembersForm1').addEventListener('submit', function(event) {
-              event.preventDefault();
-
-              var formData = new FormData(this);
-              var roomId = {{ $room->id }}; // ID phòng hiện tại
-              formData.append('room_id', roomId);
-
-              fetch('/add-members', {
-                  method: 'POST',
-                  body: formData,
-                  headers: {
-                      'X-CSRF-TOKEN': '{{ csrf_token() }}' // Đảm bảo gửi CSRF token
-                  }
-              })
-              .then(response => response.json())
-              .then(data => {
-                  alert(data.msg || data.error);
-                  if (data.success) {
-                      // Đóng modal hoặc làm mới danh sách thành viên
-                      document.getElementById('addMembersModal1').style.display = 'none';
-                  }
-              });
-          });
-      </script>
-
-      <!-- Modal Thêm thành viên -->
-      
-
-    </div>
-      <span class="fs-5 fw-semibold">Danh sách thành viên</span>
-      <div class="list-group-item member-item bg-transparent border-0 d-flex flex-column gap-3 mt-2" id="members-list">
-        <!-- Member list -->
-        {{-- <div class="d-flex justify-content-between align-items-center" >
-          <span class="member-name">Thành viên 1</span>
-          <input type="checkbox" name="members[]" value="{{ $user->id }}" class="form-check-input">
-        </div> --}}
-      </div>
-    </div>    
+        <!-- Modal Thêm thành viên -->
+        <div class="modal fade" id="addMemberModal" tabindex="-1" aria-labelledby="addMemberModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addMemberModalLabel">Thêm thành viên vào nhóm</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="memberList">
 
                         </div>
                     </div>
@@ -629,6 +382,124 @@
 
     </div>
 </div>
+
+<!-- Modal hoặc form để chọn thành viên -->
+        <!-- Modal Thêm Thành Viên (Kiểu khung thông báo) -->
+        <div id="addMembersModal1" class="custom-modal">
+            <div class="custom-modal-content">
+              <form id="addMembersForm1">
+                <h5 class="modal-title">Chọn thành viên</h5>
+                <div class="modal-body">
+                  @if(count($users) > 0)
+                    <div class="list-group" id="membersList">
+                      @foreach($users as $user)
+                        <div class="list-group-item d-flex justify-content-between align-items-center member-item">
+                          <!-- Tên thành viên -->
+                          <span class="member-name">{{ $user->name }}</span>
+                          <!-- Checkbox -->
+                          <input type="checkbox" name="members[]" value="{{ $user->id }}" class="form-check-input">
+                        </div>
+                      @endforeach
+                    </div>
+                  @else
+                    <p class="text-center text-black">Không có thành viên nào để hiển thị.</p>
+                  @endif
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-dark" id="closeCustomModal">Đóng</button>
+                  <button type="submit" class="btn btn-primary">Thêm</button>
+                </div>
+              </form>
+            </div>
+          </div>
+  
+          <style>
+          /* Tùy chỉnh modal */
+          .custom-modal {
+            display: none; /* Ẩn mặc định */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Nền tối */
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+          }
+  
+          /* Khung modal nhỏ gọn */
+          .custom-modal-content {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            width: 400px;
+            max-width: 90%; /* Giới hạn chiều rộng */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            top: 50%; /* Canh giữa theo chiều dọc */
+            left: 50%; /* Canh giữa theo chiều ngang */
+            transform: translate(-50%, -50%); /* Canh giữa chính xác */
+          }
+  
+          .custom-modal .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+          }
+  
+          .custom-modal .modal-body {
+            max-height: 300px;
+            overflow-y: auto; /* Cuộn nội dung nếu quá dài */
+          }
+  
+          .custom-modal .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+          }
+          </style>
+  
+  
+  
+  
+  
+        <script>
+            // Hiển thị modal khi nhấn nút thêm thành viên
+            document.getElementById('addMemberBtn').addEventListener('click', function() {
+  document.getElementById('addMembersModal1').style.display = 'block';
+            });
+        // Đóng modal khi nhấn nút "Đóng"
+        document.getElementById('closeCustomModal').addEventListener('click', function () {
+            document.getElementById('addMembersModal1').style.display = 'none';
+        });
+            // Gửi form khi chọn thành viên
+            document.getElementById('addMembersForm1').addEventListener('submit', function(event) {
+                event.preventDefault();
+  
+                var formData = new FormData(this);
+                var roomId = {{ $room->id }}; // ID phòng hiện tại
+                formData.append('room_id', roomId);
+  
+                fetch('/add-members', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}' // Đảm bảo gửi CSRF token
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.msg || data.error);
+                    if (data.success) {
+                        // Đóng modal hoặc làm mới danh sách thành viên
+                        document.getElementById('addMembersModal1').style.display = 'none';
+                    }
+                });
+            });
+        </script>
+  
+        <!-- Modal Thêm thành viên -->
 
 <!-- End your project here-->
 
@@ -741,8 +612,7 @@
     const $unpin_messages = '{{ route('api.pin.message.unpin') }}';
     const user_id = '{{ auth()->user()->id }}';
 </script>
-<script src="{{ asset('js/app.js') }}"></script>
-<script src="{{ asset('assets/js/custom.js') }}"></script>
+<script src="{{ mix('js/app.js') }}"></script>
 <!-- Custom scripts -->
 <script type="text/javascript">
 

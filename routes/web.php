@@ -10,6 +10,7 @@ use App\Http\Controllers\frontend\VerificationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\frontend\ProfileController;
 use App\Http\Controllers\frontend\ForgotPasswordController;
+use App\Http\Controllers\Admin\RoomController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,7 +58,7 @@ Route::middleware(['auth'])->group(function () {
 
 
 //route Room
-// Route::middleware(['auth', 'verified'])->get('/rooms', [HomeController::class, 'loadRooms'])->name('rooms');
+ Route::middleware(['auth', 'verified'])->get('/rooms', [HomeController::class, 'loadRooms'])->name('rooms');
 Route::middleware(['auth', 'verified'])->post('/create-room', [HomeController::class, 'createRoom'])->name('createRoom');
 Route::middleware(['auth', 'verified'])->post('/add-member', [HomeController::class, 'addMembers'])->name('addMembers');
 Route::post('/save-room-chat', [HomeController::class,'saveRoomChat'])->name('saveRoomChat');
@@ -94,4 +95,14 @@ Route::prefix('admin')->middleware('handleLoginAdmin')->group(function () {
     Route::get('/profile/show', [UserController::class, 'showProfileAdmin'])->name('admin.profile.show');
     Route::get('/profile/update', [UserController::class, 'showFormUpdateAdmin'])->name('admin.profile.update');
     Route::patch('/profile/update', [UserController::class, 'updateProfileAdmin']);
+
+     //Route CRUD Room
+     Route::get('/rooms', [RoomController::class, 'index'])->name('rooms.index');
+     Route::get('/rooms/create', [RoomController::class, 'create'])->name('rooms.create');
+     Route::post('/rooms/store', [RoomController::class, 'store'])->name('rooms.store');
+     Route::get('/rooms/{room}', [RoomController::class, 'show'])->name('rooms.show');
+     Route::get('/rooms/{room}/edit', [RoomController::class, 'edit'])->name('rooms.edit');
+     Route::put('/rooms/{room}', [RoomController::class, 'update'])->name('rooms.update');
+     Route::delete('/rooms/{room}', [RoomController::class, 'destroy'])->name('rooms.destroy');
+ 
 });

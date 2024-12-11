@@ -148,45 +148,7 @@ class HomeController extends Controller
     }
 }
 
-public function saveRoomChat(Request $request)
-{
-    try {
-        // Kiểm tra giá trị của request
-        Log::info('Message received:', ['message' => $request->message]);
 
-        $request->validate([
-            'room_id' => 'required|exists:rooms,id',
-            'message' => 'required|string', // Đảm bảo message không được null
-            'file' => 'nullable|file|mimes:jpeg,jpg,png,pdf,doc,docx,txt|max:10240',
-        ]);
-
-        // Lưu file nếu có
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $filePath = $file->store('chat_files', 'public'); 
-        }
-
-        // Tạo tin nhắn chat
-        $chat = RoomChat::create([
-            'room_id' => $request->room_id,
-            'user_id' => auth()->id(),
-            'content' => $request->message,  // Đảm bảo trường content được cung cấp giá trị
-            'file_path' => $filePath ?? null,
-        ]);
-
-        // Lấy thông tin người dùng gửi tin nhắn
-        $user = $chat->user;  // Thông tin người dùng liên quan đến tin nhắn
-
-        return response()->json([
-            'success' => true,
-            'data' => $chat,
-            'user' => $user,  // Trả về thông tin người dùng
-        ]);
-    } catch (\Exception $e) {
-        Log::error('Lỗi khi lưu tin nhắn: ' . $e->getMessage());
-        return response()->json(['error' => 'Có lỗi xảy ra, vui lòng thử lại!'], 500);
-    }
-}
 
 
 

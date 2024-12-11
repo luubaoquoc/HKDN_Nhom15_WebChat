@@ -2162,9 +2162,6 @@ module.exports = {
   \*****************************/
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 window.currentChannel = null;
 $(document).ready(function () {
@@ -2253,25 +2250,22 @@ $(document).ready(function () {
   $('#room-chat-form').submit(function (e) {
     e.preventDefault();
     var message = $('#room-message').val();
+
+    // Kiểm tra giá trị của message trước khi gửi
+    console.log("Message being sent:", message);
+    if (!message || message.trim() === '') {
+      console.error("Message is empty or undefined!");
+      return; // Nếu message rỗng hoặc undefined, không gửi
+    }
     $.ajax({
       url: "/save-room-chat",
       type: "POST",
       data: function () {
         var formData = new FormData();
-
-        // Log initial values
-        console.log('Initial values:', {
-          room_id: global_room_id,
-          message: message
-        });
         formData.append('room_id', global_room_id);
+        formData.append('message', message); // Gửi message đã kiểm tra
 
-        // Only append message if not empty
-        if (message && message.trim() !== '') {
-          formData.append('message', message);
-        }
-
-        // Handle file upload
+        // Handle file upload nếu có
         var fileInput = $('#file-upload')[0];
         if (fileInput && fileInput.files && fileInput.files[0]) {
           console.log('File details:', {
@@ -2281,46 +2275,20 @@ $(document).ready(function () {
           });
           formData.append('file', fileInput.files[0]);
         }
-
-        // Log final FormData contents
-        console.log('=== FormData Contents ===');
-        var _iterator = _createForOfIteratorHelper(formData.entries()),
-          _step;
-        try {
-          for (_iterator.s(); !(_step = _iterator.n()).done;) {
-            var pair = _step.value;
-            console.log("".concat(pair[0], ": "), pair[1] instanceof File ? "File: ".concat(pair[1].name, " (").concat(pair[1].type, ")") : pair[1]);
-          }
-        } catch (err) {
-          _iterator.e(err);
-        } finally {
-          _iterator.f();
-        }
         return formData;
       }(),
       processData: false,
       contentType: false,
       headers: {
         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        // 'Content-Type': 'multipart/form-data'
       },
       success: function success(res) {
-        console.log(res);
+        console.log("Response data:", res); // Log toàn bộ dữ liệu trả về từ server
         // Clear form inputs after successful submission
         $('#room-message').val('');
         $('#file-upload').val('');
         // Clear any preview image if it exists
         $('.preview-image').remove();
-        var formattedTime = dayjs(res.data.created_at).format('HH:mm');
-        var image = null;
-        var content = res.data.content;
-        if (res.file_type === 'image') {
-          image = "<img src=\"".concat(res.data.file_url, "\" class=\"img-fluid\">");
-        } else if (res.file_type === 'document') {
-          image = "<a href=\"".concat(res.data.file_url, "\" target=\"_blank\">").concat(res.data.content, "</a>");
-        }
-        var html = "\n                    <li class=\"d-flex justify-content-between mb-4 current-user-chat\" id=\"".concat(res.data.id, "-chat\">\n                        <div class=\"card mask-custom w-100\">\n                        <div class=\"card-header d-flex justify-content-between p-3\"\nstyle=\"border-bottom: 1px solid rgba(255,255,255,.3);\">\n                            <p class=\"fw-bold mb-0\">").concat(res.data.user.name, "</p>\n                            <p class=\"text-light small mb-0\"><i class=\"far fa-clock me-2\"></i>").concat(formattedTime, "</p>\n                        </div>\n                        <div class=\"card-body d-flex justify-content-between align-items-center gap-2\">\n                            <div class=\"mb-0\">\n                            <div class=\"mb-0\">\n                                ").concat(image ? image : '', "\n                            </div>\n                            <div class=\"mb-0\">\n                                ").concat(content, "\n                            </div>\n                                </div>\n                            <div>\n                                <i class=\"fas fa-thumbtack me-2 pinMessage\" aria-hidden=\"true\" data-id=\"").concat(res.data.id, "\" data-pinned=\"false\"></i>\n                                <i class=\"far fa-trash-alt deleteRoomMessage\" aria-hidden=\"true\" data-id=\"").concat(res.data.id, "\" data-bs-toggle=\"modal\" data-bs-target=\"#roomdeleteChatModal\"></i>\n                            </div>\n                        </div>\n                        </div>\n                        <img src=\"https://mdbcdn.b-cdn.net/img/Photos/Avatars/avatar-5.webp\" alt=\"avatar\"\n                        class=\"rounded-circle d-flex align-self-start ms-3 shadow-1-strong\" width=\"60\">\n                    </li>\n                ");
-        $('#list-chatRoom').append(html);
       },
       error: function error(xhr) {
         var errorMessage = xhr.status === 422 ? Object.values(xhr.responseJSON.errors).join('\n') : 'Có lỗi xảy ra, vui lòng thử lại!';
